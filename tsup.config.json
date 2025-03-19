@@ -1,0 +1,13 @@
+{
+  "$schema": "https://cdn.jsdelivr.net/npm/tsup/schema.json",
+  "entry": ["src/**/*.[jt]s", "!./src/**/*.d.ts", "!./src/**/*.spec.[jt]s"],
+  "platform": "node",
+  "target": "es2023",
+  "format": ["cjs"],
+  "tsconfig": "./tsconfig.json",
+  "sourcemap": true,
+  "clean": true,
+  "splitting": false,
+  "bundle": false,
+  "legacyOutput": true
+}
