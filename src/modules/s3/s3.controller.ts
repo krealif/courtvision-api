@@ -26,7 +26,7 @@ export default class S3Controller {
 
     return reply.code(200).send({
       statusCode: 200,
-      message: 'msg',
+      message: 'Signed upload URL created successfully',
       data: {
         ...signedUrl,
       },
@@ -47,7 +47,7 @@ export default class S3Controller {
 
     return reply.code(200).send({
       statusCode: 200,
-      message: 'msg',
+      message: 'Multipart upload initiated successfully',
       data: {
         ...uploadDetails,
       },
@@ -72,7 +72,7 @@ export default class S3Controller {
 
     return reply.code(200).send({
       statusCode: 200,
-      message: 'msg',
+      message: `Upload URL for part ${partNumber} generated successfully`,
       data: {
         ...result,
       },
@@ -93,7 +93,7 @@ export default class S3Controller {
 
     return reply.code(200).send({
       statusCode: 200,
-      message: 'msg',
+      message: 'Multipart upload parts retrieved successfully',
       data: {
         parts,
       },
@@ -120,7 +120,7 @@ export default class S3Controller {
 
     return reply.code(200).send({
       statusCode: 200,
-      message: 'msg',
+      message: 'Multipart upload completed successfully',
       data: {
         ...result,
       },
