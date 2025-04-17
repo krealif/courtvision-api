@@ -1,4 +1,5 @@
 import closeWithGrace from 'close-with-grace';
+import hyperid from 'hyperid';
 import { env } from './config';
 import createServer from './server';
 import { loggerConfig } from './utils/logger.util';
@@ -14,6 +15,12 @@ async function startServer() {
     logger: loggerConfig,
     ignoreTrailingSlash: true,
     ignoreDuplicateSlashes: true,
+    genReqId: () => hyperid().uuid,
+  });
+
+  app.addHook('onSend', async (request, reply, payload) => {
+    reply.header('x-request-id', request.id);
+    return payload;
   });
 
   const closeListeners = closeWithGrace({ delay: 500 }, async ({ err }) => {
