@@ -1,3 +1,4 @@
+import path from 'node:path';
 import { Lifetime, asClass, asFunction, asValue } from 'awilix';
 import fp from 'fastify-plugin';
 import { diContainer, fastifyAwilixPlugin } from '@fastify/awilix';
@@ -28,4 +29,18 @@ export default fp(async (fastify) => {
     }),
     dbValidator: asClass(DbValidator).singleton(),
   });
+
+  diContainer.loadModules(
+    [
+      path.join(__dirname, '../modules/**/*.controller.{ts,js}'),
+      path.join(__dirname, '../modules/**/*.service.{ts,js}'),
+    ],
+    {
+      formatName: 'camelCase',
+      resolverOptions: {
+        lifetime: Lifetime.SINGLETON,
+        register: asClass,
+      },
+    },
+  );
 });

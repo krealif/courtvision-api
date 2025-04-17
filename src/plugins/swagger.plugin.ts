@@ -10,6 +10,30 @@ export default fp(async (fastify) => {
         version: '1.0.0',
         description: 'API documentation for CourtVision App.',
       },
+      tags: [
+        {
+          name: 'Auth',
+          description: 'Endpoints related to user authentication.',
+        },
+        {
+          name: 'User',
+          description: 'Endpoints related to user data.',
+        },
+      ],
+      components: {
+        securitySchemes: {
+          bearerAuth: {
+            type: 'http',
+            scheme: 'bearer',
+            bearerFormat: 'JWT',
+          },
+        },
+      },
+      security: [
+        {
+          bearerAuth: [],
+        },
+      ],
     },
   });
 
