@@ -3,6 +3,7 @@ import { Lifetime, asClass, asFunction, asValue } from 'awilix';
 import fp from 'fastify-plugin';
 import { diContainer, fastifyAwilixPlugin } from '@fastify/awilix';
 import { createDbClient } from '@/infra/db';
+import { createS3Client } from '@/infra/storage';
 import { DbValidator } from '@/utils/db-validator.util';
 
 /**
@@ -27,6 +28,7 @@ export default fp(async (fastify) => {
       asyncDispose: 'close',
       eagerInject: true,
     }),
+    s3: asFunction(createS3Client).singleton(),
     dbValidator: asClass(DbValidator).singleton(),
   });
 

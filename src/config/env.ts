@@ -29,6 +29,14 @@ const schema = Type.Object({
   DB_DATABASE: Type.String(),
   DB_USER: Type.String(),
   DB_PASSWORD: Type.String(),
+
+  // S3 Config
+  S3_ENDPOINT: Type.String(),
+  S3_BUCKET: Type.String(),
+  S3_REGION: Type.String(),
+  S3_ACCESS_KEY_ID: Type.String(),
+  S3_SECRET_ACCESS_KEY: Type.String(),
+  S3_FORCE_PATH_STYLE: Type.Boolean({ default: true }),
 });
 
 const env = envSchema<Static<typeof schema>>({

@@ -19,6 +19,11 @@ export default fp(async (fastify) => {
           name: 'User',
           description: 'Endpoints related to user data.',
         },
+        {
+          name: 'S3',
+          description:
+            'Endpoints related to file management in S3 (Object Storage).',
+        },
       ],
       components: {
         securitySchemes: {
