@@ -3,18 +3,26 @@ import fp from 'fastify-plugin';
 import jwt, { FastifyJWTOptions, FastifyJwtVerifyOptions } from '@fastify/jwt';
 import { env } from '@/config';
 
-const authenticate =
-  (opts: FastifyJwtVerifyOptions['verify'] = {}) =>
-  async (request: FastifyRequest, reply: FastifyReply) => {
+// Middleware
+function authenticate(opts: FastifyJwtVerifyOptions['verify'] = {}) {
+  return async function <T extends FastifyRequest>(
+    request: T,
+    reply: FastifyReply,
+  ): Promise<void> {
     try {
       await request.jwtVerify({
         decode: {},
-        verify: { ...opts, algorithms: ['HS512'] },
+        verify: {
+          ...opts,
+          algorithms: ['HS512'],
+        },
       });
     } catch (err) {
-      reply.unauthorized((err as Error).message);
+      const message = err instanceof Error ? err.message : 'Unauthorized';
+      reply.unauthorized(message);
     }
   };
+}
 
 /**
  * Registers @fastify/jwt and provides JWT authentication utilities.
