@@ -17,11 +17,15 @@ export default class VideoQueueEvent {
     this.queueManager = queueManager;
   }
 
-  async init() {
-    const queue = await this.queueManager.getQueueEvent('test1Queue');
+  init() {
+    const queue = this.queueManager.getQueueEvent('test1Queue');
 
     queue.on('completed', ({ jobId }) => {
       void this.handleCompletedEvent(jobId);
+    });
+
+    queue.on('failed', ({ jobId }) => {
+      void this.handleFailedEvent(jobId);
     });
   }
 
@@ -37,6 +41,17 @@ export default class VideoQueueEvent {
       .update(videos)
       .set({
         status: 'completed',
+      })
+      .where(eq(videos.id, videoId));
+  }
+
+  private async handleFailedEvent(jobId: string) {
+    const videoId = this.getVideoId(jobId);
+
+    await this.db
+      .update(videos)
+      .set({
+        status: 'failed',
       })
       .where(eq(videos.id, videoId));
   }

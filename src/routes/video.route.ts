@@ -45,4 +45,20 @@ export default function routes(app: FastifyInstance) {
     },
     videoController.createVideo.bind(videoController),
   );
+
+  app.get(
+    '/jobs/progress-stream',
+    {
+      schema: {
+        summary: 'Stream All Jobs Progress',
+        description: 'Stream real-time progress updates for all jobs using SSE',
+        tags: ['Video', 'Jobs'],
+        response: {
+          401: ErrorSchema.UnauthorizedError,
+          500: ErrorSchema.InternalServerError,
+        },
+      },
+    },
+    videoController.streamAllJobsProgress.bind(videoController),
+  );
 }

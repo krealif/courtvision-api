@@ -78,14 +78,13 @@ export class QueueManager {
     return queue;
   }
 
-  async getQueueEvent(queueName: QueueName) {
+  getQueueEvent(queueName: QueueName) {
     const queueEvent = this.queueEvents.get(queueName);
 
     if (!queueEvent) {
       throw new Error(`Queue event for "${queueName}" not initialized`);
     }
 
-    await queueEvent.waitUntilReady();
     return queueEvent;
   }
 

@@ -1,3 +1,4 @@
+import { JobProgress } from 'bullmq';
 import { eq } from 'drizzle-orm';
 import hyperid from 'hyperid';
 import { DbClient } from '@/infra/db';
@@ -8,6 +9,10 @@ import { CreateVideoBody, VideoJobData } from './video.schema';
 interface VideoServiceDeps {
   db: DbClient;
   queueManager: QueueManager;
+}
+
+interface JobProgressCallbacks {
+  onProgress: (jobId: string, data: JobProgress) => void;
 }
 
 export default class VideoService {
@@ -72,5 +77,23 @@ export default class VideoService {
     return result.affectedRows;
   }
 
-  // private parseJobId() {}
+  streamAllJobsProgress(callbacks: JobProgressCallbacks) {
+    const queueEvents = this.queueManager.getQueueEvent('test1Queue');
+
+    const progressHandler = ({
+      jobId,
+      data,
+    }: {
+      jobId: string;
+      data: JobProgress;
+    }) => {
+      callbacks.onProgress(jobId, data);
+    };
+
+    queueEvents.on('progress', progressHandler);
+
+    return () => {
+      queueEvents.off('progress', progressHandler);
+    };
+  }
 }

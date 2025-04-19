@@ -89,4 +89,19 @@ export default class VideoController {
 
     return reply.code(204);
   }
+
+  streamAllJobsProgress(request: FastifyRequest, reply: FastifyReply) {
+    const unsubscribe = this.videoService.streamAllJobsProgress({
+      onProgress: (jobId, progress) => {
+        reply.sse({
+          event: 'progress',
+          data: JSON.stringify({ jobId, progress }),
+        });
+      },
+    });
+
+    request.socket.on('close', () => {
+      unsubscribe();
+    });
+  }
 }
