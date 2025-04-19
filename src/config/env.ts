@@ -30,6 +30,11 @@ const schema = Type.Object({
   DB_USER: Type.String(),
   DB_PASSWORD: Type.String(),
 
+  // Redis Config
+  REDIS_HOST: Type.String(),
+  REDIS_PORT: Type.Number({ default: 6379 }),
+  REDIS_PASSWORD: Type.String(),
+
   // S3 Config
   S3_ENDPOINT: Type.String(),
   S3_BUCKET: Type.String(),
