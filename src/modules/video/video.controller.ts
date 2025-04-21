@@ -91,17 +91,27 @@ export default class VideoController {
   }
 
   streamAllJobsProgress(request: FastifyRequest, reply: FastifyReply) {
-    const unsubscribe = this.videoService.streamAllJobsProgress({
-      onProgress: (jobId, progress) => {
+    const { id: authId } = request.user;
+
+    const handleJobEvent = (
+      jobId: string,
+      payload: Record<string, unknown>,
+    ) => {
+      const { videoId, userId } = this.videoService.parseJobId(jobId);
+      if (authId == userId)
         reply.sse({
-          event: 'progress',
-          data: JSON.stringify({ jobId, progress }),
+          data: JSON.stringify({ video: { id: videoId, ...payload } }),
         });
-      },
+    };
+
+    const unsubscribe = this.videoService.streamAllJobsProgress({
+      onProgress: ({ jobId, data }) =>
+        handleJobEvent(jobId, { status: 'processing', progress: data }),
+      onCompleted: ({ jobId }) =>
+        handleJobEvent(jobId, { status: 'completed' }),
+      onFailed: ({ jobId }) => handleJobEvent(jobId, { status: 'failed' }),
     });
 
-    request.socket.on('close', () => {
-      unsubscribe();
-    });
+    request.socket.on('close', unsubscribe);
   }
 }

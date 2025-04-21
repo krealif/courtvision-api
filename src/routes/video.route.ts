@@ -47,13 +47,21 @@ export default function routes(app: FastifyInstance) {
   );
 
   app.get(
-    '/jobs/progress-stream',
+    '/videos/progress',
     {
       schema: {
-        summary: 'Stream All Jobs Progress',
-        description: 'Stream real-time progress updates for all jobs using SSE',
-        tags: ['Video', 'Jobs'],
+        summary: 'Get All Video Processing Jobs Progress',
+        description:
+          'Establishes a Server-Sent Events (SSE) connection to receive real-time progress updates for all video processing jobs',
+        tags: ['Video'],
         response: {
+          200: {
+            content: {
+              'text/event-stream': {
+                schema: VideoSchema.VideoProgressResponseSchema,
+              },
+            },
+          },
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },

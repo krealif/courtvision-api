@@ -61,3 +61,14 @@ export const UserVideosResponseSchema = Type.Object({
   }),
 });
 export type UserVideosResponse = Static<typeof UserVideosResponseSchema>;
+
+export const VideoProgressResponseSchema = Type.Object({
+  data: Type.Object({
+    video: Type.Object({
+      id: Type.Number({ examples: [1] }),
+      status: Type.String(),
+      progress: Type.Optional(Type.Number()),
+    }),
+  }),
+});
+export type VideoProgressResponse = Static<typeof UserVideosResponseSchema>;

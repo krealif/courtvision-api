@@ -12,7 +12,9 @@ interface VideoServiceDeps {
 }
 
 interface JobProgressCallbacks {
-  onProgress: (jobId: string, data: JobProgress) => void;
+  onProgress: ({ jobId, data }: { jobId: string; data: JobProgress }) => void;
+  onCompleted: ({ jobId }: { jobId: string }) => void;
+  onFailed: ({ jobId }: { jobId: string }) => void;
 }
 
 export default class VideoService {
@@ -37,7 +39,7 @@ export default class VideoService {
       status: 'waiting',
     });
 
-    await this.queueManager.addJob<VideoJobData>('test1Queue', {
+    await this.queueManager.addJob<VideoJobData>('videoQueue', {
       name: 'asd',
       data: {
         id: result.insertId,
@@ -78,22 +80,33 @@ export default class VideoService {
   }
 
   streamAllJobsProgress(callbacks: JobProgressCallbacks) {
-    const queueEvents = this.queueManager.getQueueEvent('test1Queue');
+    const queueEvents = this.queueManager.getQueueEvent('videoQueue');
 
-    const progressHandler = ({
-      jobId,
-      data,
-    }: {
-      jobId: string;
-      data: JobProgress;
-    }) => {
-      callbacks.onProgress(jobId, data);
-    };
-
-    queueEvents.on('progress', progressHandler);
+    queueEvents.on('progress', callbacks.onProgress);
+    queueEvents.on('completed', callbacks.onCompleted);
+    queueEvents.on('failed', callbacks.onFailed);
 
     return () => {
-      queueEvents.off('progress', progressHandler);
+      queueEvents.off('progress', callbacks.onProgress);
+      queueEvents.off('completed', callbacks.onCompleted);
+      queueEvents.off('failed', callbacks.onFailed);
+    };
+  }
+
+  parseJobId(jobId: string) {
+    const rgx = /^v(\d+)_(\d+)-/;
+    const match = rgx.exec(jobId);
+
+    if (match?.[1] && match?.[2]) {
+      return {
+        videoId: parseInt(match[1]),
+        userId: parseInt(match[2]),
+      };
+    }
+
+    return {
+      videoId: 0,
+      userId: 0,
     };
   }
 }

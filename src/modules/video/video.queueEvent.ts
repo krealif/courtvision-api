@@ -18,7 +18,11 @@ export default class VideoQueueEvent {
   }
 
   init() {
-    const queue = this.queueManager.getQueueEvent('test1Queue');
+    const queue = this.queueManager.getQueueEvent('videoQueue');
+
+    queue.on('active', ({ jobId }) => {
+      void this.handleActiveEvent(jobId);
+    });
 
     queue.on('completed', ({ jobId }) => {
       void this.handleCompletedEvent(jobId);
@@ -32,6 +36,17 @@ export default class VideoQueueEvent {
   private getVideoId(jobId: string) {
     const rgx = /^v(\d+)_/.exec(jobId);
     return rgx?.[1] ? parseInt(rgx[1]) : 0;
+  }
+
+  private async handleActiveEvent(jobId: string) {
+    const videoId = this.getVideoId(jobId);
+
+    await this.db
+      .update(videos)
+      .set({
+        status: 'processing',
+      })
+      .where(eq(videos.id, videoId));
   }
 
   private async handleCompletedEvent(jobId: string) {

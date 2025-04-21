@@ -11,7 +11,7 @@ export function createQueueRegistry<T extends string>(
 }
 
 export const queueRegistry = createQueueRegistry({
-  test1Queue: {},
+  videoQueue: {},
 });
 
 export type QueueName = keyof typeof queueRegistry;
