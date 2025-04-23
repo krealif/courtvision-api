@@ -32,7 +32,7 @@ export default class VideoController {
 
   async getUserVideos(request: FastifyRequest, reply: FastifyReply) {
     const { id: userId } = request.user;
-    const videos = this.videoService.getVideosByUserId(userId);
+    const videos = await this.videoService.getVideosByUserId(userId);
 
     return reply.code(200).send({
       statusCode: 200,

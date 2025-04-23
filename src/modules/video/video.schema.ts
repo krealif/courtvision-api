@@ -57,7 +57,7 @@ export const UserVideosResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
-    video: Type.Array(VideoSchema),
+    videos: Type.Array(VideoSchema),
   }),
 });
 export type UserVideosResponse = Static<typeof UserVideosResponseSchema>;
