@@ -66,6 +66,7 @@ export default function routes(app: FastifyInstance) {
           500: ErrorSchema.InternalServerError,
         },
       },
+      preHandler: [app.authenticate()],
     },
     videoController.streamAllJobsProgress.bind(videoController),
   );
