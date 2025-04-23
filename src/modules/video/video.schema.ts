@@ -1,4 +1,5 @@
 import { Static, Type } from '@sinclair/typebox';
+import { VideoStatus } from '@/infra/db/db.schema';
 
 const VideoSchema = Type.Object({
   id: Type.Number({ examples: [1] }),
@@ -13,6 +14,7 @@ const VideoSchema = Type.Object({
       examples: ['TD Garden Boston'],
     }),
   ),
+  status: Type.Enum(VideoStatus),
   video_url: Type.String({
     description: 'Public S3 URL of the uploaded video',
   }),
@@ -53,22 +55,22 @@ export const CreateVideoResponseSchema = Type.Object({
 });
 export type CreateVideoResponse = Static<typeof CreateVideoResponseSchema>;
 
-export const UserVideosResponseSchema = Type.Object({
+export const ListAllVideosResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
     videos: Type.Array(VideoSchema),
   }),
 });
-export type UserVideosResponse = Static<typeof UserVideosResponseSchema>;
+export type ListAllVideosResponse = Static<typeof ListAllVideosResponseSchema>;
 
 export const VideoProgressResponseSchema = Type.Object({
   data: Type.Object({
     video: Type.Object({
       id: Type.Number({ examples: [1] }),
-      status: Type.String(),
+      status: Type.Enum(VideoStatus),
       progress: Type.Optional(Type.Number()),
     }),
   }),
 });
-export type VideoProgressResponse = Static<typeof UserVideosResponseSchema>;
+export type VideoProgressResponse = Static<typeof VideoProgressResponseSchema>;
