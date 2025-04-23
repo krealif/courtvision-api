@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { VideoStatus } from '@/infra/db/db.schema';
 import { CreateVideoBody } from './video.schema';
 import VideoService from './video.service';
 
@@ -106,10 +107,14 @@ export default class VideoController {
 
     const unsubscribe = this.videoService.streamAllJobsProgress({
       onProgress: ({ jobId, data }) =>
-        handleJobEvent(jobId, { status: 'processing', progress: data }),
+        handleJobEvent(jobId, {
+          status: VideoStatus.PROCESSING,
+          progress: data,
+        }),
       onCompleted: ({ jobId }) =>
-        handleJobEvent(jobId, { status: 'completed' }),
-      onFailed: ({ jobId }) => handleJobEvent(jobId, { status: 'failed' }),
+        handleJobEvent(jobId, { status: VideoStatus.COMPLETED }),
+      onFailed: ({ jobId }) =>
+        handleJobEvent(jobId, { status: VideoStatus.FAILED }),
     });
 
     request.socket.on('close', unsubscribe);

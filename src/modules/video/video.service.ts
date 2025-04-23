@@ -2,7 +2,7 @@ import { JobProgress } from 'bullmq';
 import { eq } from 'drizzle-orm';
 import hyperid from 'hyperid';
 import { DbClient } from '@/infra/db';
-import { videos } from '@/infra/db/db.schema';
+import { VideoStatus, videos } from '@/infra/db/db.schema';
 import { QueueManager } from '@/infra/queue/queue.manager';
 import { CreateVideoBody, VideoJobData } from './video.schema';
 
@@ -36,11 +36,11 @@ export default class VideoService {
       video_url,
       date: date ? new Date(date) : null,
       venue,
-      status: 'waiting',
+      status: VideoStatus.WAITING,
     });
 
     await this.queueManager.addJob<VideoJobData>('videoQueue', {
-      name: 'asd',
+      name: 'video-analysis',
       data: {
         id: result.insertId,
         video_url,

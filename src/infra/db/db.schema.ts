@@ -14,6 +14,13 @@ export const users = table('users', {
   updated_at: t.timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
 });
 
+export enum VideoStatus {
+  WAITING = 'waiting',
+  PROCESSING = 'processing',
+  COMPLETED = 'completed',
+  FAILED = 'failed',
+}
+
 export const videos = table('videos', {
   id: t
     .bigint('id', { mode: 'number', unsigned: true })
@@ -28,7 +35,7 @@ export const videos = table('videos', {
   venue: t.varchar('venue', { length: 255 }),
   video_url: t.varchar('video_url', { length: 255 }).notNull(),
   thumbnail_url: t.varchar('thumbnail_url', { length: 255 }),
-  status: t.varchar('status', { length: 255 }).notNull(),
+  status: t.mysqlEnum('status', VideoStatus).notNull(),
   created_at: t.timestamp('created_at').notNull().defaultNow(),
   updated_at: t.timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
 });

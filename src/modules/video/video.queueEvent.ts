@@ -1,6 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { DbClient } from '@/infra/db';
-import { videos } from '@/infra/db/db.schema';
+import { VideoStatus, videos } from '@/infra/db/db.schema';
 import { QueueManager } from '@/infra/queue/queue.manager';
 
 interface VideoQueueEventDeps {
@@ -44,7 +44,7 @@ export default class VideoQueueEvent {
     await this.db
       .update(videos)
       .set({
-        status: 'processing',
+        status: VideoStatus.PROCESSING,
       })
       .where(eq(videos.id, videoId));
   }
@@ -55,7 +55,7 @@ export default class VideoQueueEvent {
     await this.db
       .update(videos)
       .set({
-        status: 'completed',
+        status: VideoStatus.COMPLETED,
       })
       .where(eq(videos.id, videoId));
   }
@@ -66,7 +66,7 @@ export default class VideoQueueEvent {
     await this.db
       .update(videos)
       .set({
-        status: 'failed',
+        status: VideoStatus.FAILED,
       })
       .where(eq(videos.id, videoId));
   }

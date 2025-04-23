@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "04a0c2e0-7e46-4005-92d7-fec48925678e",
+  "id": "3d3db814-fa66-404e-a0ac-41e9ac1e78ff",
   "prevId": "8240f631-7ccd-46b0-b3a3-fc210af52f1d",
   "tables": {
     "users": {
@@ -123,7 +123,7 @@
         },
         "status": {
           "name": "status",
-          "type": "varchar(255)",
+          "type": "enum('waiting','processing','completed','failed')",
           "primaryKey": false,
           "notNull": true,
           "autoincrement": false
