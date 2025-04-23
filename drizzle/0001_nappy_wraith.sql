@@ -4,9 +4,9 @@ CREATE TABLE `videos` (
 	`title` varchar(255) NOT NULL,
 	`date` date,
 	`venue` varchar(255),
+	`status` enum('waiting','processing','completed','failed') NOT NULL,
 	`video_url` varchar(255) NOT NULL,
 	`thumbnail_url` varchar(255),
-	`status` enum('waiting','processing','completed','failed') NOT NULL,
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `videos_id` PRIMARY KEY(`id`)

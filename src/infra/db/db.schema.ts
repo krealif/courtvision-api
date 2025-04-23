@@ -33,9 +33,9 @@ export const videos = table('videos', {
   title: t.varchar('title', { length: 255 }).notNull(),
   date: t.date('date'),
   venue: t.varchar('venue', { length: 255 }),
+  status: t.mysqlEnum('status', VideoStatus).notNull(),
   video_url: t.varchar('video_url', { length: 255 }).notNull(),
   thumbnail_url: t.varchar('thumbnail_url', { length: 255 }),
-  status: t.mysqlEnum('status', VideoStatus).notNull(),
   created_at: t.timestamp('created_at').notNull().defaultNow(),
   updated_at: t.timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
 });

@@ -1,7 +1,7 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "3d3db814-fa66-404e-a0ac-41e9ac1e78ff",
+  "id": "1275de72-f5fe-4858-9557-362cf31ce4b2",
   "prevId": "8240f631-7ccd-46b0-b3a3-fc210af52f1d",
   "tables": {
     "users": {
@@ -107,6 +107,13 @@
           "notNull": false,
           "autoincrement": false
         },
+        "status": {
+          "name": "status",
+          "type": "enum('waiting','processing','completed','failed')",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
         "video_url": {
           "name": "video_url",
           "type": "varchar(255)",
@@ -119,13 +126,6 @@
           "type": "varchar(255)",
           "primaryKey": false,
           "notNull": false,
-          "autoincrement": false
-        },
-        "status": {
-          "name": "status",
-          "type": "enum('waiting','processing','completed','failed')",
-          "primaryKey": false,
-          "notNull": true,
           "autoincrement": false
         },
         "created_at": {
