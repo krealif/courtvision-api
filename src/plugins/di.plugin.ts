@@ -3,6 +3,7 @@ import { Lifetime, asClass, asFunction, asValue } from 'awilix';
 import fp from 'fastify-plugin';
 import { diContainer, fastifyAwilixPlugin } from '@fastify/awilix';
 import { createDbClient } from '@/infra/db';
+import { QueueManager } from '@/infra/queue/queue.manager';
 import { createS3Client } from '@/infra/storage';
 import { DbValidator } from '@/utils/db-validator.util';
 
@@ -30,6 +31,12 @@ export default fp(async (fastify) => {
     }),
     s3: asFunction(createS3Client).singleton(),
     dbValidator: asClass(DbValidator).singleton(),
+    queueManager: asClass(QueueManager, {
+      lifetime: Lifetime.SINGLETON,
+      asyncInit: 'init',
+      asyncDispose: 'close',
+      eagerInject: true,
+    }),
   });
 
   diContainer.loadModules(
@@ -42,6 +49,18 @@ export default fp(async (fastify) => {
       resolverOptions: {
         lifetime: Lifetime.SINGLETON,
         register: asClass,
+      },
+    },
+  );
+
+  diContainer.loadModules(
+    [path.join(__dirname, '../modules/**/*.queueEvent.{ts,js}')],
+    {
+      formatName: 'camelCase',
+      resolverOptions: {
+        lifetime: Lifetime.SINGLETON,
+        register: asClass,
+        asyncInit: 'init',
       },
     },
   );

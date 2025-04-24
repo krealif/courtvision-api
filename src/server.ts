@@ -1,5 +1,6 @@
 import path from 'node:path';
 import Fastify, { FastifyServerOptions } from 'fastify';
+import { FastifySSEPlugin } from 'fastify-sse-v2';
 import { LoggerOptions } from 'pino';
 import AutoLoad from '@fastify/autoload';
 import { TypeBoxTypeProvider } from '@fastify/type-provider-typebox';
@@ -16,6 +17,7 @@ export default async function createServer(opts: BuildOptions = {}) {
   app.register(import('@fastify/auth'));
   app.register(import('@fastify/sensible'));
   app.register(import('@fastify/under-pressure'));
+  app.register(FastifySSEPlugin);
 
   // Auto-load plugins
   app.register(AutoLoad, {

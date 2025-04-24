@@ -20,6 +20,10 @@ export default fp(async (fastify) => {
           description: 'Endpoints related to user data.',
         },
         {
+          name: 'Video',
+          description: 'Endpoints related to video analysis.',
+        },
+        {
           name: 'S3',
           description:
             'Endpoints related to file management in S3 (Object Storage).',
