@@ -16,7 +16,7 @@ export default function routes(app: FastifyInstance) {
         tags: ['Video'],
         security: [{ bearerAuth: [] }],
         response: {
-          200: VideoSchema.ListAllVideosResponseSchema,
+          200: VideoSchema.ListVideosResponseSchema,
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },
@@ -24,6 +24,27 @@ export default function routes(app: FastifyInstance) {
       preHandler: [app.authenticate()],
     },
     videoController.getUserVideos.bind(videoController),
+  );
+
+  app.get(
+    '/videos/:id',
+    {
+      schema: {
+        summary: 'Retrieve a video',
+        description: 'desc',
+        tags: ['Video'],
+        security: [{ bearerAuth: [] }],
+        params: VideoSchema.VideoIdParamsSchema,
+        response: {
+          200: VideoSchema.GetVideoResponseSchema,
+          401: ErrorSchema.UnauthorizedError,
+          403: ErrorSchema.ForbiddenError,
+          500: ErrorSchema.InternalServerError,
+        },
+      },
+      preHandler: [app.authenticate()],
+    },
+    videoController.getVideoById.bind(videoController),
   );
 
   app.post(
@@ -69,5 +90,29 @@ export default function routes(app: FastifyInstance) {
       preHandler: [app.authenticate()],
     },
     videoController.streamAllJobsProgress.bind(videoController),
+  );
+
+  app.delete(
+    '/videos/:id',
+    {
+      schema: {
+        summary: 'Delete a video',
+        description: 'desc',
+        tags: ['Video'],
+        security: [{ bearerAuth: [] }],
+        params: VideoSchema.VideoIdParamsSchema,
+        response: {
+          204: {
+            description: 'Default Response',
+            type: 'null',
+          },
+          401: ErrorSchema.UnauthorizedError,
+          403: ErrorSchema.ForbiddenError,
+          500: ErrorSchema.InternalServerError,
+        },
+      },
+      preHandler: [app.authenticate()],
+    },
+    videoController.deleteVideo.bind(videoController),
   );
 }

@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { VideoStatus } from '@/infra/db/db.schema';
-import { CreateVideoBody } from './video.schema';
+import { CreateVideoBody, VideoIdParams } from './video.schema';
 import VideoService from './video.service';
 
 interface VideoControllerDeps {
@@ -44,10 +44,10 @@ export default class VideoController {
   }
 
   async getVideoById(
-    request: FastifyRequest<{ Params: { videoId: number } }>,
+    request: FastifyRequest<{ Params: VideoIdParams }>,
     reply: FastifyReply,
   ) {
-    const { videoId } = request.params;
+    const { id: videoId } = request.params;
     const { id: userId } = request.user;
 
     const video = await this.videoService.getVideoById(videoId);
@@ -70,16 +70,16 @@ export default class VideoController {
   }
 
   async deleteVideo(
-    request: FastifyRequest<{ Params: { videoId: number } }>,
+    request: FastifyRequest<{ Params: VideoIdParams }>,
     reply: FastifyReply,
   ) {
-    const { videoId } = request.params;
+    const { id: videoId } = request.params;
     const { id: userId } = request.user;
 
     const video = await this.videoService.getVideoById(videoId);
 
     if (!video) {
-      return reply.send('aaa');
+      return reply.notFound();
     }
 
     if (video.user_id !== userId) {
@@ -88,7 +88,7 @@ export default class VideoController {
 
     await this.videoService.deleteVideo(video.id);
 
-    return reply.code(204);
+    return reply.code(204).send();
   }
 
   streamAllJobsProgress(request: FastifyRequest, reply: FastifyReply) {
