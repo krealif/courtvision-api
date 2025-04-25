@@ -14,13 +14,12 @@ export const SignupBodySchema = Type.Object({
     examples: ['Password123!'],
   }),
 });
+export type SignupBody = Static<typeof SignupBodySchema>;
 
 export const LoginBodySchema = Type.Object({
   email: Type.String({ format: 'email', examples: ['alice@example.com'] }),
   password: Type.String({ examples: ['Password123!'] }),
 });
-
-export type SignupBody = Static<typeof SignupBodySchema>;
 export type LoginBody = Static<typeof LoginBodySchema>;
 
 const AuthPayloadSchema = Type.Object({
@@ -35,8 +34,10 @@ export const SignupResponseSchema = Type.Intersect([
   Type.Object({ statusCode: Type.Literal(201) }),
   AuthPayloadSchema,
 ]);
+export type SignupResponse = Static<typeof SignupResponseSchema>;
 
 export const LoginResponseSchema = Type.Intersect([
   Type.Object({ statusCode: Type.Literal(200) }),
   AuthPayloadSchema,
 ]);
+export type LoginResponse = Static<typeof LoginResponseSchema>;

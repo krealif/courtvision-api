@@ -15,9 +15,9 @@ export default function routes(app: FastifyInstance) {
           'Returns a pre-signed URL that can be used to upload a file directly to S3',
         tags: ['S3'],
         security: [{ bearerAuth: [] }],
-        body: S3Schema.SignedUploadBodySchema,
+        body: S3Schema.PresignedUploadBodySchema,
         response: {
-          200: S3Schema.SignedUploadResponseSchema,
+          200: S3Schema.PresignedUploadResponseSchema,
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },
@@ -36,9 +36,9 @@ export default function routes(app: FastifyInstance) {
           'Starts a new multipart upload process and returns upload ID for subsequent operations',
         tags: ['S3'],
         security: [{ bearerAuth: [] }],
-        body: S3Schema.MultipartUploadBodySchema,
+        body: S3Schema.MultipartUploadInitBodySchema,
         response: {
-          200: S3Schema.MultipartUploadResponseSchema,
+          200: S3Schema.MultipartUploadInitResponseSchema,
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },
@@ -79,8 +79,8 @@ export default function routes(app: FastifyInstance) {
           'Returns information about all parts that have been uploaded for a specific multipart upload',
         tags: ['S3'],
         security: [{ bearerAuth: [] }],
-        params: S3Schema.MultipartUploadPartsParamsSchema,
-        querystring: S3Schema.MultipartUploadPartsQuerySchema,
+        params: S3Schema.UploadIdParamsSchema,
+        querystring: S3Schema.ObjectKeyQuerySchema,
         response: {
           200: S3Schema.MultipartUploadPartsResponseSchema,
           401: ErrorSchema.UnauthorizedError,
@@ -100,8 +100,8 @@ export default function routes(app: FastifyInstance) {
           'Completes a multipart upload by assembling previously uploaded parts',
         tags: ['S3'],
         security: [{ bearerAuth: [] }],
-        params: S3Schema.CompleteMultipartUploadParamsSchema,
-        querystring: S3Schema.CompleteMultipartUploadQuerySchema,
+        params: S3Schema.UploadIdParamsSchema,
+        querystring: S3Schema.ObjectKeyQuerySchema,
         body: S3Schema.CompleteMultipartUploadBodySchema,
         response: {
           200: S3Schema.CompleteMultipartUploadResponseSchema,
@@ -123,8 +123,8 @@ export default function routes(app: FastifyInstance) {
           'Aborts a multipart upload and deletes any parts that have been uploaded',
         tags: ['S3'],
         security: [{ bearerAuth: [] }],
-        params: S3Schema.AbortMultipartUploadParamsSchema,
-        querystring: S3Schema.AbortMultipartUploadQuerySchema,
+        params: S3Schema.UploadIdParamsSchema,
+        querystring: S3Schema.ObjectKeyQuerySchema,
         response: {
           204: {
             description: 'Default Response',

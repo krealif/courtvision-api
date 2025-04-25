@@ -1,4 +1,4 @@
-import { Type } from '@sinclair/typebox';
+import { Static, Type } from '@sinclair/typebox';
 
 export const UserSchema = Type.Object({
   id: Type.Number({ examples: [1] }),
@@ -9,10 +9,11 @@ export const UserSchema = Type.Object({
   }),
 });
 
-export const UserResponseSchema = Type.Object({
+export const GetUserResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
     user: UserSchema,
   }),
 });
+export type GetUserResponse = Static<typeof GetUserResponseSchema>;

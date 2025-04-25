@@ -16,7 +16,7 @@ export default function routes(app: FastifyInstance) {
         tags: ['Video'],
         security: [{ bearerAuth: [] }],
         response: {
-          200: VideoSchema.ListVideosResponseSchema,
+          200: VideoSchema.GetListVideosResponseSchema,
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },

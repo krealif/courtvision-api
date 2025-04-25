@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { VideoStatus } from '@/infra/db/db.schema';
-import { CreateVideoBody, VideoIdParams } from './video.schema';
+import { getDateString } from '@/utils/date.util';
+import * as VideoSchema from './video.schema';
 import VideoService from './video.service';
 
 interface VideoControllerDeps {
@@ -15,22 +16,36 @@ export default class VideoController {
   }
 
   async createVideo(
-    request: FastifyRequest<{ Body: CreateVideoBody }>,
-    reply: FastifyReply,
+    request: FastifyRequest<{
+      Body: VideoSchema.CreateVideoBody;
+      Reply: VideoSchema.CreateVideoResponse;
+    }>,
+    reply: FastifyReply<{ Reply: VideoSchema.CreateVideoResponse }>,
   ) {
     const { id: userId } = request.user;
     const video = await this.videoService.createVideo(userId, request.body);
+
+    if (!video) {
+      return reply.internalServerError();
+    }
 
     return reply.code(201).send({
       statusCode: 201,
       message: 'Video created successfully.',
       data: {
-        video,
+        video: {
+          ...video,
+          date: video.date ? getDateString(video.date) : undefined,
+          venue: video.venue ?? undefined,
+        },
       },
     });
   }
 
-  async getUserVideos(request: FastifyRequest, reply: FastifyReply) {
+  async getUserVideos(
+    request: FastifyRequest<{ Reply: VideoSchema.GetListVideosResponse }>,
+    reply: FastifyReply<{ Reply: VideoSchema.GetListVideosResponse }>,
+  ) {
     const { id: userId } = request.user;
     const videos = await this.videoService.getVideosByUserId(userId);
 
@@ -38,14 +53,21 @@ export default class VideoController {
       statusCode: 200,
       message: 'msg',
       data: {
-        videos,
+        videos: videos.map((video) => ({
+          ...video,
+          date: video.date ? getDateString(video.date) : undefined,
+          venue: video.venue ?? undefined,
+        })),
       },
     });
   }
 
   async getVideoById(
-    request: FastifyRequest<{ Params: VideoIdParams }>,
-    reply: FastifyReply,
+    request: FastifyRequest<{
+      Params: VideoSchema.VideoIdParams;
+      Reply: VideoSchema.GetVideoResponse;
+    }>,
+    reply: FastifyReply<{ Reply: VideoSchema.GetVideoResponse }>,
   ) {
     const { id: videoId } = request.params;
     const { id: userId } = request.user;
@@ -64,13 +86,17 @@ export default class VideoController {
       statusCode: 200,
       message: 'msg',
       data: {
-        video,
+        video: {
+          ...video,
+          date: video.date ? getDateString(video.date) : undefined,
+          venue: video.venue ?? undefined,
+        },
       },
     });
   }
 
   async deleteVideo(
-    request: FastifyRequest<{ Params: VideoIdParams }>,
+    request: FastifyRequest<{ Params: VideoSchema.VideoIdParams }>,
     reply: FastifyReply,
   ) {
     const { id: videoId } = request.params;

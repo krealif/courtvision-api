@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { GetUserResponse } from './user.schema';
 import UserService from './user.service';
 
 interface UserControllerDeps {
@@ -12,12 +13,15 @@ export default class UserController {
     this.userService = userService;
   }
 
-  async getProfile(request: FastifyRequest, reply: FastifyReply) {
+  async getUser(
+    request: FastifyRequest<{ Reply: GetUserResponse }>,
+    reply: FastifyReply<{ Reply: GetUserResponse }>,
+  ) {
     const { id: userId } = request.user;
     const user = await this.userService.getUserById(userId);
 
     if (!user) {
-      reply.notFound();
+      return reply.notFound();
     }
 
     return reply.code(200).send({

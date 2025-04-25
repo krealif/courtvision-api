@@ -45,7 +45,7 @@ export default class S3Service {
     filename: string,
     contentType: string,
     expiresIn?: number,
-  ) {
+  ): Promise<{ url: string; method: 'PUT' }> {
     const key = this.generateKey(filename);
 
     const command = new PutObjectCommand({
@@ -84,8 +84,8 @@ export default class S3Service {
     const result = await this.s3.send(command);
 
     return {
-      key: result.Key,
-      uploadId: result.UploadId,
+      key: result.Key ?? null,
+      uploadId: result.UploadId ?? null,
     };
   }
 
@@ -164,7 +164,7 @@ export default class S3Service {
 
     const result = await this.s3.send(command);
     return {
-      location: result.Location,
+      location: result.Location ?? null,
     };
   }
 

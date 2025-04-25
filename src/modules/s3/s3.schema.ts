@@ -1,6 +1,9 @@
 import { Static, Type } from '@sinclair/typebox';
 
-const BaseUploadSchema = Type.Object({
+/**
+ * Request Schema
+ */
+const BaseObjectSchema = Type.Object({
   filename: Type.String({
     minLength: 1,
     maxLength: 128,
@@ -12,34 +15,38 @@ const BaseUploadSchema = Type.Object({
   }),
 });
 
-const UploadIdParamSchema = Type.Object({
+export const UploadIdParamsSchema = Type.Object({
   uploadId: Type.String({
     description: 'Unique identifier for the multipart upload process',
   }),
 });
+export type UploadIdParams = Static<typeof UploadIdParamsSchema>;
 
-const KeyQuerySchema = Type.Object({
+export const ObjectKeyQuerySchema = Type.Object({
   key: Type.String({ description: 'Object key/path in the S3 bucket' }),
 });
+export type ObjectKeyQuery = Static<typeof ObjectKeyQuerySchema>;
 
-// Signed Upload
-export const SignedUploadBodySchema = BaseUploadSchema;
-export type SignedUploadBody = Static<typeof SignedUploadBodySchema>;
+// Presigned Upload
+export const PresignedUploadBodySchema = BaseObjectSchema;
+export type PresignedUploadBody = Static<typeof PresignedUploadBodySchema>;
 
 // Multipart Upload Initiation
-export const MultipartUploadBodySchema = Type.Object({
-  ...BaseUploadSchema.properties,
+export const MultipartUploadInitBodySchema = Type.Object({
+  ...BaseObjectSchema.properties,
   metadata: Type.Optional(
     Type.Record(Type.String(), Type.String(), {
       description: 'Optional metadata to be stored with the file',
     }),
   ),
 });
-export type MultipartUploadBody = Static<typeof MultipartUploadBodySchema>;
+export type MultipartUploadInitBody = Static<
+  typeof MultipartUploadInitBodySchema
+>;
 
 // Multipart Upload URL
 export const MultipartUploadUrlParamsSchema = Type.Object({
-  ...UploadIdParamSchema.properties,
+  ...UploadIdParamsSchema.properties,
   partNumber: Type.Number({
     description: 'The sequence number of the part being uploaded',
   }),
@@ -48,64 +55,36 @@ export type MultipartUploadUrlParams = Static<
   typeof MultipartUploadUrlParamsSchema
 >;
 
-export const MultipartUploadUrlQuerySchema = KeyQuerySchema;
+export const MultipartUploadUrlQuerySchema = ObjectKeyQuerySchema;
 export type MultipartUploadUrlQuery = Static<
   typeof MultipartUploadUrlQuerySchema
 >;
 
-// List Multipart Upload Parts
-export const MultipartUploadPartsParamsSchema = UploadIdParamSchema;
-export type MultipartUploadPartsParams = Static<
-  typeof MultipartUploadPartsParamsSchema
->;
-
-export const MultipartUploadPartsQuerySchema = KeyQuerySchema;
-export type MultipartUploadPartsQuery = Static<
-  typeof MultipartUploadPartsQuerySchema
->;
-
 // Complete Multipart Upload
-
-const UploadParts = Type.Array(
+const CompletedParts = Type.Array(
   Type.Object({
-    PartNumber: Type.Number({ description: 'Number identifying the part' }),
-    ETag: Type.String({
-      description: 'Entity tag returned when the part was uploaded',
-    }),
+    PartNumber: Type.Optional(
+      Type.Number({ description: 'Number identifying the part' }),
+    ),
+    ETag: Type.Optional(
+      Type.String({
+        description: 'Entity tag returned when the part was uploaded',
+      }),
+    ),
   }),
 );
 
 export const CompleteMultipartUploadBodySchema = Type.Object({
-  parts: UploadParts,
+  parts: CompletedParts,
 });
 export type CompleteMultipartUploadBody = Static<
   typeof CompleteMultipartUploadBodySchema
 >;
 
-export const CompleteMultipartUploadParamsSchema = UploadIdParamSchema;
-export type CompleteMultipartUploadParams = Static<
-  typeof CompleteMultipartUploadParamsSchema
->;
-
-export const CompleteMultipartUploadQuerySchema = KeyQuerySchema;
-export type CompleteMultipartUploadQuery = Static<
-  typeof CompleteMultipartUploadQuerySchema
->;
-
-// Abort Multipart Upload
-export const AbortMultipartUploadParamsSchema = UploadIdParamSchema;
-export type AbortMultipartUploadParams = Static<
-  typeof AbortMultipartUploadParamsSchema
->;
-
-export const AbortMultipartUploadQuerySchema = KeyQuerySchema;
-export type AbortMultipartUploadQuery = Static<
-  typeof AbortMultipartUploadQuerySchema
->;
-
-// Response
-
-export const SignedUploadResponseSchema = Type.Object({
+/**
+ * Response Schema
+ */
+export const PresignedUploadResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
@@ -113,8 +92,11 @@ export const SignedUploadResponseSchema = Type.Object({
     method: Type.Literal('PUT'),
   }),
 });
+export type PresignedUploadResponse = Static<
+  typeof PresignedUploadResponseSchema
+>;
 
-export const MultipartUploadResponseSchema = Type.Object({
+export const MultipartUploadInitResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
@@ -122,6 +104,9 @@ export const MultipartUploadResponseSchema = Type.Object({
     uploadId: Type.Union([Type.String(), Type.Null()]),
   }),
 });
+export type MultipartUploadInitResponse = Static<
+  typeof MultipartUploadInitResponseSchema
+>;
 
 export const MultipartUploadUrlResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
@@ -131,13 +116,20 @@ export const MultipartUploadUrlResponseSchema = Type.Object({
     expiresIn: Type.Optional(Type.Number()),
   }),
 });
+export type MultipartUploadUrlResponse = Static<
+  typeof MultipartUploadUrlResponseSchema
+>;
 
 export const MultipartUploadPartsResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
+  message: Type.String(),
   data: Type.Object({
-    parts: UploadParts,
+    parts: CompletedParts,
   }),
 });
+export type MultipartUploadPartsResponse = Static<
+  typeof MultipartUploadPartsResponseSchema
+>;
 
 export const CompleteMultipartUploadResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
@@ -146,3 +138,6 @@ export const CompleteMultipartUploadResponseSchema = Type.Object({
     location: Type.Union([Type.String(), Type.Null()]),
   }),
 });
+export type CompleteMultipartUploadResponse = Static<
+  typeof CompleteMultipartUploadResponseSchema
+>;

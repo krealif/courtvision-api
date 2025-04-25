@@ -14,8 +14,11 @@ export default class S3Controller {
   }
 
   async createSignedUploadUrl(
-    request: FastifyRequest<{ Body: S3Schema.SignedUploadBody }>,
-    reply: FastifyReply,
+    request: FastifyRequest<{
+      Body: S3Schema.PresignedUploadBody;
+      Reply: S3Schema.PresignedUploadResponse;
+    }>,
+    reply: FastifyReply<{ Reply: S3Schema.PresignedUploadResponse }>,
   ) {
     const { filename, contentType } = request.body;
 
@@ -34,8 +37,13 @@ export default class S3Controller {
   }
 
   async initiateMultipartUpload(
-    request: FastifyRequest<{ Body: S3Schema.MultipartUploadBody }>,
-    reply: FastifyReply,
+    request: FastifyRequest<{
+      Body: S3Schema.MultipartUploadInitBody;
+      Reply: S3Schema.MultipartUploadInitResponse;
+    }>,
+    reply: FastifyReply<{
+      Reply: S3Schema.MultipartUploadInitResponse;
+    }>,
   ): Promise<void> {
     const { filename, contentType, metadata } = request.body;
 
@@ -58,8 +66,9 @@ export default class S3Controller {
     request: FastifyRequest<{
       Params: S3Schema.MultipartUploadUrlParams;
       Querystring: S3Schema.MultipartUploadUrlQuery;
+      Reply: S3Schema.MultipartUploadUrlResponse;
     }>,
-    reply: FastifyReply,
+    reply: FastifyReply<{ Reply: S3Schema.MultipartUploadUrlResponse }>,
   ): Promise<void> {
     const { uploadId, partNumber } = request.params;
     const { key } = request.query;
@@ -81,10 +90,11 @@ export default class S3Controller {
 
   async listMultipartUploadParts(
     request: FastifyRequest<{
-      Params: S3Schema.MultipartUploadPartsParams;
-      Querystring: S3Schema.MultipartUploadPartsQuery;
+      Params: S3Schema.UploadIdParams;
+      Querystring: S3Schema.ObjectKeyQuery;
+      Reply: S3Schema.MultipartUploadPartsResponse;
     }>,
-    reply: FastifyReply,
+    reply: FastifyReply<{ Reply: S3Schema.MultipartUploadPartsResponse }>,
   ): Promise<void> {
     const { uploadId } = request.params;
     const { key } = request.query;
@@ -103,10 +113,11 @@ export default class S3Controller {
   async completeMultipartUpload(
     request: FastifyRequest<{
       Body: S3Schema.CompleteMultipartUploadBody;
-      Params: S3Schema.CompleteMultipartUploadParams;
-      Querystring: S3Schema.CompleteMultipartUploadQuery;
+      Params: S3Schema.UploadIdParams;
+      Querystring: S3Schema.ObjectKeyQuery;
+      Reply: S3Schema.CompleteMultipartUploadResponse;
     }>,
-    reply: FastifyReply,
+    reply: FastifyReply<{ Reply: S3Schema.CompleteMultipartUploadResponse }>,
   ): Promise<void> {
     const { parts } = request.body;
     const { uploadId } = request.params;
@@ -129,8 +140,8 @@ export default class S3Controller {
 
   async abortMultipartUpload(
     request: FastifyRequest<{
-      Params: S3Schema.AbortMultipartUploadParams;
-      Querystring: S3Schema.AbortMultipartUploadQuery;
+      Params: S3Schema.UploadIdParams;
+      Querystring: S3Schema.ObjectKeyQuery;
     }>,
     reply: FastifyReply,
   ): Promise<void> {

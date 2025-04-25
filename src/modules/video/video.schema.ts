@@ -22,6 +22,9 @@ const VideoSchema = Type.Object({
 
 export type VideoJobData = Pick<Static<typeof VideoSchema>, 'id' | 'video_url'>;
 
+/**
+ * Request Schema
+ */
 export const CreateVideoBodySchema = Type.Object({
   title: Type.String({
     minLength: 1,
@@ -46,8 +49,11 @@ export const CreateVideoBodySchema = Type.Object({
 });
 export type CreateVideoBody = Static<typeof CreateVideoBodySchema>;
 
+/**
+ * Response Schema
+ */
 export const CreateVideoResponseSchema = Type.Object({
-  statusCode: Type.Literal(200),
+  statusCode: Type.Literal(201),
   message: Type.String(),
   data: Type.Object({
     video: VideoSchema,
@@ -55,7 +61,7 @@ export const CreateVideoResponseSchema = Type.Object({
 });
 export type CreateVideoResponse = Static<typeof CreateVideoResponseSchema>;
 
-export const ListVideosResponseSchema = Type.Object({
+export const GetListVideosResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
@@ -63,7 +69,7 @@ export const ListVideosResponseSchema = Type.Object({
   }),
 });
 
-export type ListVideosResponse = Static<typeof ListVideosResponseSchema>;
+export type GetListVideosResponse = Static<typeof GetListVideosResponseSchema>;
 
 export const VideoIdParamsSchema = Type.Object({
   id: Type.Number({ description: 'ID of the video' }),
@@ -72,7 +78,7 @@ export type VideoIdParams = Static<typeof VideoIdParamsSchema>;
 
 export const GetVideoResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
-  message: Type.String({ examples: ['Video retrieved successfully'] }),
+  message: Type.String(),
   data: Type.Object({
     video: VideoSchema,
   }),

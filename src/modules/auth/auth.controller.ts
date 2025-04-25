@@ -1,5 +1,10 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { LoginBody, SignupBody } from './auth.schema';
+import {
+  LoginBody,
+  LoginResponse,
+  SignupBody,
+  SignupResponse,
+} from './auth.schema';
 import AuthService from './auth.service';
 
 interface AuthControllerDeps {
@@ -14,8 +19,8 @@ export default class AuthController {
   }
 
   async login(
-    request: FastifyRequest<{ Body: LoginBody }>,
-    reply: FastifyReply,
+    request: FastifyRequest<{ Body: LoginBody; Reply: LoginResponse }>,
+    reply: FastifyReply<{ Reply: LoginResponse }>,
   ) {
     const user = await this.authService.verifyCredentials(request.body);
 
@@ -39,8 +44,8 @@ export default class AuthController {
   }
 
   async signup(
-    request: FastifyRequest<{ Body: SignupBody }>,
-    reply: FastifyReply,
+    request: FastifyRequest<{ Body: SignupBody; Reply: SignupResponse }>,
+    reply: FastifyReply<{ Reply: SignupResponse }>,
   ) {
     const user = await this.authService.createUser(request.body);
 
