@@ -26,7 +26,7 @@ export default class VideoService {
     this.queueManager = queueManager;
   }
 
-  async createVideo(
+  async create(
     userId: number,
     { title, video_url, date, venue }: CreateVideoBody,
   ) {
@@ -57,7 +57,7 @@ export default class VideoService {
     return video;
   }
 
-  async getVideosByUserId(userId: number) {
+  async findAll(userId: number) {
     const userVideos = await this.db.query.videos.findMany({
       where: eq(videos.user_id, userId),
     });
@@ -65,7 +65,7 @@ export default class VideoService {
     return userVideos;
   }
 
-  async getVideoById(videoId: number) {
+  async findById(videoId: number) {
     const video = await this.db.query.videos.findFirst({
       where: eq(videos.id, videoId),
     });
@@ -73,13 +73,13 @@ export default class VideoService {
     return video;
   }
 
-  async deleteVideo(videoId: number) {
+  async delete(videoId: number) {
     const [result] = await this.db.delete(videos).where(eq(videos.id, videoId));
 
     return result.affectedRows;
   }
 
-  streamAllJobsProgress(callbacks: JobProgressCallbacks) {
+  subscribeToJobProgress(callbacks: JobProgressCallbacks) {
     const queueEvents = this.queueManager.getQueueEvent('videoQueue');
 
     queueEvents.on('progress', callbacks.onProgress);

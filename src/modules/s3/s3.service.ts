@@ -27,7 +27,7 @@ export default class S3Service {
     this.bucketName = env.S3_BUCKET;
   }
 
-  private generateKey(filename: string): string {
+  private generateObjectKey(filename: string): string {
     const uuid = crypto.randomUUID();
     const ext = path.extname(filename);
     const nameWithoutExt = path.basename(filename, ext);
@@ -41,12 +41,12 @@ export default class S3Service {
   /**
    * Generate a signed URL for direct upload to S3
    */
-  async getSignedUploadUrl(
+  async getPresignedUploadUrl(
     filename: string,
     contentType: string,
     expiresIn?: number,
   ): Promise<{ url: string; method: 'PUT' }> {
-    const key = this.generateKey(filename);
+    const key = this.generateObjectKey(filename);
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -67,12 +67,12 @@ export default class S3Service {
   /**
    * Initiate a multipart upload
    */
-  async initiateMultipartUpload(
+  async createMultipartUpload(
     filename: string,
     contentType: string,
     metadata?: Record<string, string>,
   ) {
-    const key = this.generateKey(filename);
+    const key = this.generateObjectKey(filename);
 
     const command = new CreateMultipartUploadCommand({
       Bucket: this.bucketName,
@@ -92,7 +92,7 @@ export default class S3Service {
   /**
    * Get a signed URL for uploading a specific part
    */
-  async getMultipartUploadUrl(
+  async getPresignedUploadPartUrl(
     key: string,
     uploadId: string,
     partNumber: number,

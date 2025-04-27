@@ -32,7 +32,7 @@ export const PresignedUploadBodySchema = BaseObjectSchema;
 export type PresignedUploadBody = Static<typeof PresignedUploadBodySchema>;
 
 // Multipart Upload Initiation
-export const MultipartUploadInitBodySchema = Type.Object({
+export const CreateMultipartUploadBodySchema = Type.Object({
   ...BaseObjectSchema.properties,
   metadata: Type.Optional(
     Type.Record(Type.String(), Type.String(), {
@@ -40,24 +40,24 @@ export const MultipartUploadInitBodySchema = Type.Object({
     }),
   ),
 });
-export type MultipartUploadInitBody = Static<
-  typeof MultipartUploadInitBodySchema
+export type CreateMultipartUploadBody = Static<
+  typeof CreateMultipartUploadBodySchema
 >;
 
 // Multipart Upload URL
-export const MultipartUploadUrlParamsSchema = Type.Object({
+export const PresignedUploadPartUrlParamsSchema = Type.Object({
   ...UploadIdParamsSchema.properties,
   partNumber: Type.Number({
     description: 'The sequence number of the part being uploaded',
   }),
 });
-export type MultipartUploadUrlParams = Static<
-  typeof MultipartUploadUrlParamsSchema
+export type PresignedUploadPartUrlParams = Static<
+  typeof PresignedUploadPartUrlParamsSchema
 >;
 
-export const MultipartUploadUrlQuerySchema = ObjectKeyQuerySchema;
-export type MultipartUploadUrlQuery = Static<
-  typeof MultipartUploadUrlQuerySchema
+export const PresignedUploadPartUrlQuerySchema = ObjectKeyQuerySchema;
+export type PresignedUploadPartUrlQuery = Static<
+  typeof PresignedUploadPartUrlQuerySchema
 >;
 
 // Complete Multipart Upload
@@ -96,7 +96,7 @@ export type PresignedUploadResponse = Static<
   typeof PresignedUploadResponseSchema
 >;
 
-export const MultipartUploadInitResponseSchema = Type.Object({
+export const CreateMultipartUploadResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
@@ -104,11 +104,11 @@ export const MultipartUploadInitResponseSchema = Type.Object({
     uploadId: Type.Union([Type.String(), Type.Null()]),
   }),
 });
-export type MultipartUploadInitResponse = Static<
-  typeof MultipartUploadInitResponseSchema
+export type CreateMultipartUploadResponse = Static<
+  typeof CreateMultipartUploadResponseSchema
 >;
 
-export const MultipartUploadUrlResponseSchema = Type.Object({
+export const PresignedUploadPartUrlSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
@@ -116,8 +116,8 @@ export const MultipartUploadUrlResponseSchema = Type.Object({
     expiresIn: Type.Optional(Type.Number()),
   }),
 });
-export type MultipartUploadUrlResponse = Static<
-  typeof MultipartUploadUrlResponseSchema
+export type PresignedUploadPartUrlResponse = Static<
+  typeof PresignedUploadPartUrlSchema
 >;
 
 export const MultipartUploadPartsResponseSchema = Type.Object({

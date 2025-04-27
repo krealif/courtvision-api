@@ -61,7 +61,7 @@ export const CreateVideoResponseSchema = Type.Object({
 });
 export type CreateVideoResponse = Static<typeof CreateVideoResponseSchema>;
 
-export const GetListVideosResponseSchema = Type.Object({
+export const IndexVideosResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
@@ -69,21 +69,21 @@ export const GetListVideosResponseSchema = Type.Object({
   }),
 });
 
-export type GetListVideosResponse = Static<typeof GetListVideosResponseSchema>;
+export type IndexVideosResponse = Static<typeof IndexVideosResponseSchema>;
 
 export const VideoIdParamsSchema = Type.Object({
   id: Type.Number({ description: 'ID of the video' }),
 });
 export type VideoIdParams = Static<typeof VideoIdParamsSchema>;
 
-export const GetVideoResponseSchema = Type.Object({
+export const ShowVideoResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
     video: VideoSchema,
   }),
 });
-export type GetVideoResponse = Static<typeof GetVideoResponseSchema>;
+export type ShowVideoResponse = Static<typeof ShowVideoResponseSchema>;
 
 export const VideoProgressResponseSchema = Type.Object({
   data: Type.Object({

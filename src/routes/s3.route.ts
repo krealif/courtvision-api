@@ -7,7 +7,7 @@ export default function routes(app: FastifyInstance) {
   const s3Controller = app.diContainer.resolve<S3Controller>('s3Controller');
 
   app.post(
-    '/s3/sign',
+    '/s3/upload/presign',
     {
       schema: {
         summary: 'Get pre-signed upload URL',
@@ -24,11 +24,11 @@ export default function routes(app: FastifyInstance) {
       },
       preHandler: [app.authenticate()],
     },
-    s3Controller.createSignedUploadUrl.bind(s3Controller),
+    s3Controller.getPresignedUploadUrl.bind(s3Controller),
   );
 
   app.post(
-    '/s3/multipart',
+    '/s3/upload/multipart',
     {
       schema: {
         summary: 'Initiate a multipart upload process',
@@ -36,20 +36,20 @@ export default function routes(app: FastifyInstance) {
           'Starts a new multipart upload process and returns upload ID for subsequent operations',
         tags: ['S3'],
         security: [{ bearerAuth: [] }],
-        body: S3Schema.MultipartUploadInitBodySchema,
+        body: S3Schema.CreateMultipartUploadBodySchema,
         response: {
-          200: S3Schema.MultipartUploadInitResponseSchema,
+          200: S3Schema.CreateMultipartUploadResponseSchema,
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },
       },
       preHandler: [app.authenticate()],
     },
-    s3Controller.initiateMultipartUpload.bind(s3Controller),
+    s3Controller.createMultipartUpload.bind(s3Controller),
   );
 
   app.get(
-    '/s3/multipart/:uploadId/:partNumber',
+    '/s3/upload/multipart/:uploadId/:partNumber',
     {
       schema: {
         summary: 'Get pre-signed URL for uploading a specific part',
@@ -57,21 +57,21 @@ export default function routes(app: FastifyInstance) {
           'Returns a pre-signed URL for uploading a specific part number of a multipart upload',
         tags: ['S3'],
         security: [{ bearerAuth: [] }],
-        params: S3Schema.MultipartUploadUrlParamsSchema,
-        querystring: S3Schema.MultipartUploadUrlQuerySchema,
+        params: S3Schema.PresignedUploadPartUrlParamsSchema,
+        querystring: S3Schema.PresignedUploadPartUrlQuerySchema,
         response: {
-          200: S3Schema.MultipartUploadUrlResponseSchema,
+          200: S3Schema.PresignedUploadPartUrlSchema,
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },
       },
       preHandler: [app.authenticate()],
     },
-    s3Controller.createMultipartUploadUrl.bind(s3Controller),
+    s3Controller.getPresignedUploadPartUrl.bind(s3Controller),
   );
 
   app.get(
-    '/s3/multipart/:uploadId',
+    '/s3/upload/multipart/:uploadId',
     {
       schema: {
         summary: 'List all parts of a multipart upload',
@@ -92,7 +92,7 @@ export default function routes(app: FastifyInstance) {
     s3Controller.listMultipartUploadParts.bind(s3Controller),
   );
   app.post(
-    '/s3/multipart/:uploadId/complete',
+    '/s3/upload/multipart/:uploadId/complete',
     {
       schema: {
         summary: 'Complete a multipart upload',
@@ -115,7 +115,7 @@ export default function routes(app: FastifyInstance) {
   );
 
   app.delete(
-    '/s3/multipart/:uploadId',
+    '/s3/upload/multipart/:uploadId',
     {
       schema: {
         summary: 'Abort a multipart upload',

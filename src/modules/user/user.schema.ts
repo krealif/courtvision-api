@@ -9,11 +9,11 @@ export const UserSchema = Type.Object({
   }),
 });
 
-export const GetUserResponseSchema = Type.Object({
+export const ShowUserResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
     user: UserSchema,
   }),
 });
-export type GetUserResponse = Static<typeof GetUserResponseSchema>;
+export type ShowUserResponse = Static<typeof ShowUserResponseSchema>;

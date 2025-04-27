@@ -15,7 +15,7 @@ export default class VideoController {
     this.videoService = videoService;
   }
 
-  async createVideo(
+  async create(
     request: FastifyRequest<{
       Body: VideoSchema.CreateVideoBody;
       Reply: VideoSchema.CreateVideoResponse;
@@ -23,7 +23,7 @@ export default class VideoController {
     reply: FastifyReply<{ Reply: VideoSchema.CreateVideoResponse }>,
   ) {
     const { id: userId } = request.user;
-    const video = await this.videoService.createVideo(userId, request.body);
+    const video = await this.videoService.create(userId, request.body);
 
     if (!video) {
       return reply.internalServerError();
@@ -42,12 +42,12 @@ export default class VideoController {
     });
   }
 
-  async getUserVideos(
-    request: FastifyRequest<{ Reply: VideoSchema.GetListVideosResponse }>,
-    reply: FastifyReply<{ Reply: VideoSchema.GetListVideosResponse }>,
+  async index(
+    request: FastifyRequest<{ Reply: VideoSchema.IndexVideosResponse }>,
+    reply: FastifyReply<{ Reply: VideoSchema.IndexVideosResponse }>,
   ) {
     const { id: userId } = request.user;
-    const videos = await this.videoService.getVideosByUserId(userId);
+    const videos = await this.videoService.findAll(userId);
 
     return reply.code(200).send({
       statusCode: 200,
@@ -62,17 +62,17 @@ export default class VideoController {
     });
   }
 
-  async getVideoById(
+  async show(
     request: FastifyRequest<{
       Params: VideoSchema.VideoIdParams;
-      Reply: VideoSchema.GetVideoResponse;
+      Reply: VideoSchema.ShowVideoResponse;
     }>,
-    reply: FastifyReply<{ Reply: VideoSchema.GetVideoResponse }>,
+    reply: FastifyReply<{ Reply: VideoSchema.ShowVideoResponse }>,
   ) {
     const { id: videoId } = request.params;
     const { id: userId } = request.user;
 
-    const video = await this.videoService.getVideoById(videoId);
+    const video = await this.videoService.findById(videoId);
 
     if (!video) {
       return reply.notFound();
@@ -95,14 +95,14 @@ export default class VideoController {
     });
   }
 
-  async deleteVideo(
+  async delete(
     request: FastifyRequest<{ Params: VideoSchema.VideoIdParams }>,
     reply: FastifyReply,
   ) {
     const { id: videoId } = request.params;
     const { id: userId } = request.user;
 
-    const video = await this.videoService.getVideoById(videoId);
+    const video = await this.videoService.findById(videoId);
 
     if (!video) {
       return reply.notFound();
@@ -112,12 +112,12 @@ export default class VideoController {
       return reply.forbidden();
     }
 
-    await this.videoService.deleteVideo(video.id);
+    await this.videoService.delete(video.id);
 
     return reply.code(204).send();
   }
 
-  streamAllJobsProgress(request: FastifyRequest, reply: FastifyReply) {
+  streamProgress(request: FastifyRequest, reply: FastifyReply) {
     const { id: authId } = request.user;
 
     const handleJobEvent = (
@@ -131,7 +131,7 @@ export default class VideoController {
         });
     };
 
-    const unsubscribe = this.videoService.streamAllJobsProgress({
+    const unsubscribe = this.videoService.subscribeToJobProgress({
       onProgress: ({ jobId, data }) =>
         handleJobEvent(jobId, {
           status: VideoStatus.PROCESSING,

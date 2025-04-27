@@ -19,7 +19,7 @@ export default class AuthService {
     this.dbValidator = dbValidator;
   }
 
-  async verifyCredentials({ email, password }: LoginBody) {
+  async verify({ email, password }: LoginBody) {
     const user = await this.db.query.users.findFirst({
       where: eq(users.email, email),
     });
@@ -33,7 +33,7 @@ export default class AuthService {
     return user;
   }
 
-  async createUser({ name, email, password }: SignupBody) {
+  async create({ name, email, password }: SignupBody) {
     const hashedPassword = await hash(password, 10);
 
     await this.dbValidator.validate(

@@ -16,14 +16,14 @@ export default function routes(app: FastifyInstance) {
         tags: ['Video'],
         security: [{ bearerAuth: [] }],
         response: {
-          200: VideoSchema.GetListVideosResponseSchema,
+          200: VideoSchema.IndexVideosResponseSchema,
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },
       },
       preHandler: [app.authenticate()],
     },
-    videoController.getUserVideos.bind(videoController),
+    videoController.index.bind(videoController),
   );
 
   app.get(
@@ -36,7 +36,7 @@ export default function routes(app: FastifyInstance) {
         security: [{ bearerAuth: [] }],
         params: VideoSchema.VideoIdParamsSchema,
         response: {
-          200: VideoSchema.GetVideoResponseSchema,
+          200: VideoSchema.ShowVideoResponseSchema,
           401: ErrorSchema.UnauthorizedError,
           403: ErrorSchema.ForbiddenError,
           500: ErrorSchema.InternalServerError,
@@ -44,7 +44,7 @@ export default function routes(app: FastifyInstance) {
       },
       preHandler: [app.authenticate()],
     },
-    videoController.getVideoById.bind(videoController),
+    videoController.show.bind(videoController),
   );
 
   app.post(
@@ -64,7 +64,7 @@ export default function routes(app: FastifyInstance) {
       },
       preHandler: [app.authenticate()],
     },
-    videoController.createVideo.bind(videoController),
+    videoController.create.bind(videoController),
   );
 
   app.get(
@@ -89,7 +89,7 @@ export default function routes(app: FastifyInstance) {
       },
       preHandler: [app.authenticate()],
     },
-    videoController.streamAllJobsProgress.bind(videoController),
+    videoController.streamProgress.bind(videoController),
   );
 
   app.delete(
@@ -113,6 +113,6 @@ export default function routes(app: FastifyInstance) {
       },
       preHandler: [app.authenticate()],
     },
-    videoController.deleteVideo.bind(videoController),
+    videoController.delete.bind(videoController),
   );
 }

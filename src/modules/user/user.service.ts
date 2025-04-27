@@ -13,7 +13,7 @@ export default class UserService {
     this.db = db;
   }
 
-  async getUserById(userId: number) {
+  async findById(userId: number) {
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
       columns: {

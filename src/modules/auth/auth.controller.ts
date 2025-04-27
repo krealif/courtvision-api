@@ -22,7 +22,7 @@ export default class AuthController {
     request: FastifyRequest<{ Body: LoginBody; Reply: LoginResponse }>,
     reply: FastifyReply<{ Reply: LoginResponse }>,
   ) {
-    const user = await this.authService.verifyCredentials(request.body);
+    const user = await this.authService.verify(request.body);
 
     if (!user) {
       return reply.unauthorized('Invalid credentials.');
@@ -47,7 +47,7 @@ export default class AuthController {
     request: FastifyRequest<{ Body: SignupBody; Reply: SignupResponse }>,
     reply: FastifyReply<{ Reply: SignupResponse }>,
   ) {
-    const user = await this.authService.createUser(request.body);
+    const user = await this.authService.create(request.body);
 
     if (!user) {
       return reply.internalServerError();

@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 import UserController from '@/modules/user/user.controller';
-import { GetUserResponseSchema } from '@/modules/user/user.schema';
+import { ShowUserResponseSchema } from '@/modules/user/user.schema';
 import ErrorSchema from '@/shared/error.schema';
 
 export default function routes(app: FastifyInstance) {
@@ -17,7 +17,7 @@ export default function routes(app: FastifyInstance) {
         tags: ['User'],
         security: [{ bearerAuth: [] }],
         response: {
-          200: GetUserResponseSchema,
+          200: ShowUserResponseSchema,
           401: ErrorSchema.ForbiddenError,
           404: ErrorSchema.NotFoundError,
           500: ErrorSchema.InternalServerError,
@@ -25,6 +25,6 @@ export default function routes(app: FastifyInstance) {
       },
       preHandler: [app.authenticate()],
     },
-    userController.getUser.bind(userController),
+    userController.show.bind(userController),
   );
 }

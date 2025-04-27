@@ -13,7 +13,7 @@ export default class S3Controller {
     this.s3Service = s3Service;
   }
 
-  async createSignedUploadUrl(
+  async getPresignedUploadUrl(
     request: FastifyRequest<{
       Body: S3Schema.PresignedUploadBody;
       Reply: S3Schema.PresignedUploadResponse;
@@ -22,7 +22,7 @@ export default class S3Controller {
   ) {
     const { filename, contentType } = request.body;
 
-    const signedUrl = await this.s3Service.getSignedUploadUrl(
+    const signedUrl = await this.s3Service.getPresignedUploadUrl(
       filename,
       contentType,
     );
@@ -36,18 +36,18 @@ export default class S3Controller {
     });
   }
 
-  async initiateMultipartUpload(
+  async createMultipartUpload(
     request: FastifyRequest<{
-      Body: S3Schema.MultipartUploadInitBody;
-      Reply: S3Schema.MultipartUploadInitResponse;
+      Body: S3Schema.CreateMultipartUploadBody;
+      Reply: S3Schema.CreateMultipartUploadResponse;
     }>,
     reply: FastifyReply<{
-      Reply: S3Schema.MultipartUploadInitResponse;
+      Reply: S3Schema.CreateMultipartUploadResponse;
     }>,
   ): Promise<void> {
     const { filename, contentType, metadata } = request.body;
 
-    const uploadDetails = await this.s3Service.initiateMultipartUpload(
+    const uploadDetails = await this.s3Service.createMultipartUpload(
       filename,
       contentType,
       metadata,
@@ -62,18 +62,18 @@ export default class S3Controller {
     });
   }
 
-  async createMultipartUploadUrl(
+  async getPresignedUploadPartUrl(
     request: FastifyRequest<{
-      Params: S3Schema.MultipartUploadUrlParams;
-      Querystring: S3Schema.MultipartUploadUrlQuery;
-      Reply: S3Schema.MultipartUploadUrlResponse;
+      Params: S3Schema.PresignedUploadPartUrlParams;
+      Querystring: S3Schema.PresignedUploadPartUrlQuery;
+      Reply: S3Schema.PresignedUploadPartUrlResponse;
     }>,
-    reply: FastifyReply<{ Reply: S3Schema.MultipartUploadUrlResponse }>,
+    reply: FastifyReply<{ Reply: S3Schema.PresignedUploadPartUrlResponse }>,
   ): Promise<void> {
     const { uploadId, partNumber } = request.params;
     const { key } = request.query;
 
-    const result = await this.s3Service.getMultipartUploadUrl(
+    const result = await this.s3Service.getPresignedUploadPartUrl(
       key,
       uploadId,
       partNumber,
