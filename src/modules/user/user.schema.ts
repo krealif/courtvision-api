@@ -1,7 +1,10 @@
 import { Static, Type } from '@sinclair/typebox';
 
 export const UserSchema = Type.Object({
-  id: Type.Number({ examples: [1] }),
+  id: Type.Number({
+    examples: [1],
+    description: 'The unique identifier for the user resource.',
+  }),
   name: Type.String({ examples: ['Alice'] }),
   email: Type.String({
     format: 'email',

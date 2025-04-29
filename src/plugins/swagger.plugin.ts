@@ -12,19 +12,19 @@ export default fp(async (fastify) => {
       },
       tags: [
         {
-          name: 'Auth',
+          name: 'Authentication',
           description: 'Endpoints related to user authentication.',
         },
         {
-          name: 'User',
+          name: 'Users',
           description: 'Endpoints related to user data.',
         },
         {
-          name: 'Video',
-          description: 'Endpoints related to video analysis.',
+          name: 'Videos',
+          description: 'Endpoints related to basketball match video analysis.',
         },
         {
-          name: 'S3',
+          name: 'S3 Storage',
           description:
             'Endpoints related to file management in S3 (Object Storage).',
         },

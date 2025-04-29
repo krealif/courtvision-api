@@ -8,13 +8,13 @@ export default function routes(app: FastifyInstance) {
     app.diContainer.resolve<UserController>('userController');
 
   app.get(
-    '/profile',
+    '/users/profile',
     {
       schema: {
-        summary: 'Get Profile',
+        summary: 'Retrieve a user profile',
         description:
           'Retrieves the profile information of the currently authenticated user.',
-        tags: ['User'],
+        tags: ['Users'],
         security: [{ bearerAuth: [] }],
         response: {
           200: ShowUserResponseSchema,

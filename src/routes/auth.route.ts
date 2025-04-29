@@ -13,12 +13,13 @@ export default function routes(app: FastifyInstance) {
     app.diContainer.resolve<AuthController>('authController');
 
   app.post(
-    '/login',
+    '/auth/login',
     {
       schema: {
         summary: 'Login',
-        description: 'Authenticate a user and retrieve access token.',
-        tags: ['Auth'],
+        description:
+          'Authenticates a user with email and password and returns an access token.',
+        tags: ['Authentication'],
         security: [],
         body: LoginBodySchema,
         response: {
@@ -33,12 +34,13 @@ export default function routes(app: FastifyInstance) {
   );
 
   app.post(
-    '/signup',
+    '/auth/signup',
     {
       schema: {
-        summary: 'Signup',
-        description: 'Registers a new user account in the system.',
-        tags: ['Auth'],
+        summary: 'Register a user',
+        description:
+          'Creates a new user account and returns the user details along with an access token.',
+        tags: ['Authentication'],
         security: [],
         body: SignupBodySchema,
         response: {
