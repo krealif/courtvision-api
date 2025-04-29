@@ -64,6 +64,7 @@ export const CreateVideoBodySchema = Type.Object({
     }),
   ),
   video_url: Type.String({
+    format: 'uri',
     minLength: 1,
     maxLength: 255,
     description: 'The public S3 URL of the uploaded video.',

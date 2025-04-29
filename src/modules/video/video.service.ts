@@ -30,10 +30,13 @@ export default class VideoService {
     userId: number,
     { title, video_url, date, venue }: CreateVideoBody,
   ) {
+    const pathSegments = new URL(video_url).pathname.split('/').filter(Boolean);
+    const objectKey = pathSegments.slice(1).join('/');
+
     const [result] = await this.db.insert(videos).values({
       user_id: userId,
       title,
-      video_url,
+      video_url: objectKey,
       date: date ? new Date(date) : null,
       venue,
       status: VideoStatus.WAITING,
