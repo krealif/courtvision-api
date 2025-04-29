@@ -100,7 +100,7 @@ export default function routes(app: FastifyInstance) {
       schema: {
         summary: 'Delete a video',
         description:
-          'Permanently deletes a video. This cannot be undone. All associated analysis data will also be removed.',
+          'Permanently deletes a video only if its status is "completed" or "failed". This cannot be undone. All associated analysis data will also be removed.',
         tags: ['Videos'],
         security: [{ bearerAuth: [] }],
         params: VideoSchema.VideoIdParamsSchema,

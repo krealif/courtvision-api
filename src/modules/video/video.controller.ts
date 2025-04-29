@@ -108,7 +108,9 @@ export default class VideoController {
       return reply.notFound();
     }
 
-    if (video.user_id !== userId) {
+    const allowedStatuses = [VideoStatus.COMPLETED, VideoStatus.FAILED];
+
+    if (video.user_id !== userId || !allowedStatuses.includes(video.status)) {
       return reply.forbidden();
     }
 
