@@ -1,6 +1,6 @@
+import { format } from 'date-fns';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { VideoStatus } from '@/infra/db/db.schema';
-import { getDateString } from '@/utils/date.util';
 import * as VideoSchema from './video.schema';
 import VideoService from './video.service';
 
@@ -35,7 +35,7 @@ export default class VideoController {
       data: {
         video: {
           ...video,
-          date: video.date ? getDateString(video.date) : undefined,
+          date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
         },
       },
@@ -55,7 +55,7 @@ export default class VideoController {
       data: {
         videos: videos.map((video) => ({
           ...video,
-          date: video.date ? getDateString(video.date) : undefined,
+          date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
         })),
       },
@@ -88,7 +88,7 @@ export default class VideoController {
       data: {
         video: {
           ...video,
-          date: video.date ? getDateString(video.date) : undefined,
+          date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
         },
       },
