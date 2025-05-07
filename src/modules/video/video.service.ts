@@ -33,31 +33,33 @@ export default class VideoService {
     const pathSegments = new URL(video_url).pathname.split('/').filter(Boolean);
     const objectKey = pathSegments.slice(1).join('/');
 
-    const [result] = await this.db.insert(videos).values({
-      user_id: userId,
-      title,
-      video_url: objectKey,
-      date: date ? new Date(date) : null,
-      venue,
-      status: VideoStatus.WAITING,
-    });
+    return await this.db.transaction(async (tx) => {
+      const [result] = await tx.insert(videos).values({
+        user_id: userId,
+        title,
+        video_url: objectKey,
+        date: date ? new Date(date) : null,
+        venue,
+        status: VideoStatus.WAITING,
+      });
 
-    await this.queueManager.addJob<VideoJobData>('videoQueue', {
-      name: 'video-analysis',
-      data: {
-        id: result.insertId,
-        video_url,
-      },
-      options: {
-        jobId: `v${result.insertId}_${userId}-${hyperid()()}`,
-      },
-    });
+      await this.queueManager.addJob<VideoJobData>('videoQueue', {
+        name: 'video-analysis',
+        data: {
+          id: result.insertId,
+          video_url: objectKey,
+        },
+        options: {
+          jobId: `v${result.insertId}_${userId}-${hyperid()()}`,
+        },
+      });
 
-    const video = await this.db.query.videos.findFirst({
-      where: eq(videos.id, result.insertId),
-    });
+      const video = await tx.query.videos.findFirst({
+        where: eq(videos.id, result.insertId),
+      });
 
-    return video;
+      return video;
+    });
   }
 
   async findAll(userId: number) {
