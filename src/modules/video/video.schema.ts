@@ -32,6 +32,11 @@ const VideoSchema = Type.Object({
   video_url: Type.String({
     description: 'The public S3 URL of the uploaded video.',
   }),
+  created_at: Type.String({
+    format: 'date-time',
+    description: 'The date and time when the video resource was created.',
+    examples: ['2025-04-10T14:30:00Z'],
+  }),
 });
 
 export type VideoJobData = Pick<Static<typeof VideoSchema>, 'id' | 'video_url'>;

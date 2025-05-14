@@ -37,6 +37,7 @@ export default class VideoController {
           ...video,
           date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
+          created_at: video.created_at.toISOString(),
         },
       },
     });
@@ -57,6 +58,7 @@ export default class VideoController {
           ...video,
           date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
+          created_at: video.created_at.toISOString(),
         })),
       },
     });
@@ -90,6 +92,7 @@ export default class VideoController {
           ...video,
           date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
+          created_at: video.created_at.toISOString(),
         },
       },
     });
