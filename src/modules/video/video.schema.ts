@@ -126,13 +126,13 @@ export const VideoProgressResponseSchema = Type.Object({
       }),
       status: Type.Enum(VideoStatus, {
         description: 'The current analysis status of the video.',
-        examples: ['waiting', 'processing', 'completed', 'failed'],
+        examples: ['processing'],
       }),
       progress: Type.Optional(
         Type.Number({
           description:
             'The percentage of video analysis completion, from 0 to 100.',
-          examples: [25, 50, 75, 100],
+          examples: [25],
           minimum: 0,
           maximum: 100,
         }),
