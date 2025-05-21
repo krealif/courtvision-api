@@ -1,5 +1,5 @@
 import { JobProgress } from 'bullmq';
-import { eq } from 'drizzle-orm';
+import { desc, eq } from 'drizzle-orm';
 import hyperid from 'hyperid';
 import { DbClient } from '@/infra/db';
 import { VideoStatus, videos } from '@/infra/db/db.schema';
@@ -65,6 +65,7 @@ export default class VideoService {
   async findAll(userId: number) {
     const userVideos = await this.db.query.videos.findMany({
       where: eq(videos.user_id, userId),
+      orderBy: desc(videos.created_at),
     });
 
     return userVideos;
