@@ -50,7 +50,7 @@ export default class UserController {
 
     return reply.code(200).send({
       statusCode: 200,
-      message: 'User profile retrieved successfully.',
+      message: 'User profile updated successfully.',
       data: {
         user: {
           ...updatedUser,
