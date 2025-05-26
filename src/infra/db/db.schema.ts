@@ -7,6 +7,7 @@ export const users = table('users', {
   name: t.varchar({ length: 255 }).notNull(),
   email: t.varchar({ length: 255 }).notNull().unique(),
   password: t.varchar({ length: 255 }).notNull(),
+  photo_url: t.varchar({ length: 255 }),
   created_at: t.timestamp().notNull().defaultNow(),
   updated_at: t.timestamp().notNull().defaultNow().onUpdateNow(),
 });

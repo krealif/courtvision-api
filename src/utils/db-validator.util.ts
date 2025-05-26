@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, ne } from 'drizzle-orm';
 import {
   AnyMySqlColumn,
   MySqlTable,
@@ -9,6 +9,11 @@ import { DbClient } from '@/infra/db';
 interface TableColumn<T extends MySqlTable<TableConfig>> {
   table: T;
   column: keyof T['_']['columns'] & string;
+}
+
+interface UniqueTableColumn<T extends MySqlTable<TableConfig>>
+  extends TableColumn<T> {
+  ignoreId?: number;
 }
 
 interface ValidationContext<T = unknown> {
@@ -29,15 +34,25 @@ class ValidationRule {
     }
   }
 
-  unique<T extends MySqlTable<TableConfig>>({ table, column }: TableColumn<T>) {
+  unique<T extends MySqlTable<TableConfig>>({
+    table,
+    column,
+    ignoreId,
+  }: UniqueTableColumn<T>) {
     this.validations.push(async ({ value, field, errors, db }) => {
       const columnRef = table[column as keyof T] as AnyMySqlColumn;
 
-      const exists = await db
-        .select()
-        .from(table)
-        .where(eq(columnRef, value))
-        .limit(1);
+      let query = db.select().from(table).where(eq(columnRef, value));
+
+      if (ignoreId) {
+        const idColumn = table['id' as keyof typeof table] as AnyMySqlColumn;
+        query = db
+          .select()
+          .from(table)
+          .where(and(eq(columnRef, value), ne(idColumn, ignoreId)));
+      }
+
+      const exists = await query.limit(1);
 
       if (exists.length > 0) {
         errors[field] ??= [];
@@ -107,7 +122,7 @@ export class DbValidator {
 }
 
 export const v = {
-  unique: <T extends MySqlTable<TableConfig>>(params: TableColumn<T>) =>
+  unique: <T extends MySqlTable<TableConfig>>(params: UniqueTableColumn<T>) =>
     new ValidationRule().unique(params),
   exists: <T extends MySqlTable<TableConfig>>(params: TableColumn<T>) =>
     new ValidationRule().exists(params),

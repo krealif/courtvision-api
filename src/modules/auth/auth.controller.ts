@@ -24,9 +24,7 @@ export default class AuthController {
   ) {
     const user = await this.authService.verify(request.body);
 
-    if (!user) {
-      return reply.unauthorized('Invalid credentials.');
-    }
+    if (!user) return reply.unauthorized('Invalid credentials.');
 
     const token = await reply.jwtSign({
       id: user.id,
@@ -37,7 +35,10 @@ export default class AuthController {
       statusCode: 200,
       message: 'Login successful.',
       data: {
-        user,
+        user: {
+          ...user,
+          photo_url: user.photo_url ?? undefined,
+        },
         token,
       },
     });
@@ -49,9 +50,7 @@ export default class AuthController {
   ) {
     const user = await this.authService.create(request.body);
 
-    if (!user) {
-      return reply.internalServerError();
-    }
+    if (!user) return reply.internalServerError();
 
     const token = await reply.jwtSign({
       id: user.id,
@@ -62,7 +61,10 @@ export default class AuthController {
       statusCode: 201,
       message: 'User registered successfully.',
       data: {
-        user,
+        user: {
+          ...user,
+          photo_url: user.photo_url ?? undefined,
+        },
         token,
       },
     });
