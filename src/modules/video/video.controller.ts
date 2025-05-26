@@ -1,18 +1,22 @@
 import { format } from 'date-fns';
 import { FastifyReply, FastifyRequest } from 'fastify';
 import { VideoStatus } from '@/infra/db/db.schema';
+import S3Service from '../s3/s3.service';
 import * as VideoSchema from './video.schema';
 import VideoService from './video.service';
 
 interface VideoControllerDeps {
   videoService: VideoService;
+  s3Service: S3Service;
 }
 
 export default class VideoController {
   private readonly videoService;
+  private readonly s3Service;
 
-  constructor({ videoService }: VideoControllerDeps) {
+  constructor({ videoService, s3Service }: VideoControllerDeps) {
     this.videoService = videoService;
+    this.s3Service = s3Service;
   }
 
   async create(
@@ -25,9 +29,7 @@ export default class VideoController {
     const { id: userId } = request.user;
     const video = await this.videoService.create(userId, request.body);
 
-    if (!video) {
-      return reply.internalServerError();
-    }
+    if (!video) return reply.internalServerError();
 
     return reply.code(201).send({
       statusCode: 201,
@@ -50,16 +52,23 @@ export default class VideoController {
     const { id: userId } = request.user;
     const videos = await this.videoService.findAll(userId);
 
+    const responseVideos = await Promise.all(
+      videos.map(async (video) => ({
+        ...video,
+        date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
+        venue: video.venue ?? undefined,
+        thumbnail_url: video.thumbnail_url
+          ? await this.s3Service.getPresignedDownloadUrl(video.thumbnail_url)
+          : undefined,
+        created_at: video.created_at.toISOString(),
+      })),
+    );
+
     return reply.code(200).send({
       statusCode: 200,
       message: 'msg',
       data: {
-        videos: videos.map((video) => ({
-          ...video,
-          date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
-          venue: video.venue ?? undefined,
-          created_at: video.created_at.toISOString(),
-        })),
+        videos: responseVideos,
       },
     });
   }
@@ -76,13 +85,11 @@ export default class VideoController {
 
     const video = await this.videoService.findById(videoId);
 
-    if (!video) {
-      return reply.notFound();
-    }
+    if (!video) return reply.notFound();
+    if (video.user_id !== userId) return reply.forbidden();
 
-    if (video.user_id !== userId) {
-      return reply.forbidden();
-    }
+    const getNullableUrl = (key: string | null | undefined) =>
+      key ? this.s3Service.getPresignedDownloadUrl(key) : null;
 
     return reply.code(200).send({
       statusCode: 200,
@@ -92,6 +99,15 @@ export default class VideoController {
           ...video,
           date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
+          video_url: await this.s3Service.getPresignedDownloadUrl(
+            video.video_url,
+          ),
+          thumbnail_url: video.thumbnail_url
+            ? await this.s3Service.getPresignedDownloadUrl(video.thumbnail_url)
+            : undefined,
+          video_result: await getNullableUrl(video.video_result),
+          tracking_result: await getNullableUrl(video.tracking_result),
+          shot_result: await getNullableUrl(video.shot_result),
           created_at: video.created_at.toISOString(),
         },
       },
@@ -107,15 +123,12 @@ export default class VideoController {
 
     const video = await this.videoService.findById(videoId);
 
-    if (!video) {
-      return reply.notFound();
-    }
+    if (!video) return reply.notFound();
 
     const allowedStatuses = [VideoStatus.COMPLETED, VideoStatus.FAILED];
 
-    if (video.user_id !== userId || !allowedStatuses.includes(video.status)) {
+    if (video.user_id !== userId || !allowedStatuses.includes(video.status))
       return reply.forbidden();
-    }
 
     await this.videoService.delete(video.id);
 

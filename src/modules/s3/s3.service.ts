@@ -6,6 +6,7 @@ import {
   CompleteMultipartUploadCommand,
   CompletedPart,
   CreateMultipartUploadCommand,
+  GetObjectCommand,
   ListPartsCommand,
   PutObjectCommand,
   S3Client,
@@ -176,5 +177,24 @@ export default class S3Service {
     });
 
     await this.s3.send(command);
+  }
+
+  /**
+   * Generate a signed URL to temporarily access (download) an object from S3
+   */
+  async getPresignedDownloadUrl(
+    key: string,
+    expiresIn?: number, // in seconds, e.g., 3600 for 1 hour
+  ): Promise<string> {
+    const command = new GetObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
+
+    const url = await getSignedUrl(this.s3, command, {
+      expiresIn,
+    });
+
+    return url;
   }
 }

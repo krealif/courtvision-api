@@ -30,6 +30,9 @@ export const videos = table('videos', {
   status: t.mysqlEnum(VideoStatus).notNull(),
   video_url: t.varchar({ length: 255 }).notNull(),
   thumbnail_url: t.varchar({ length: 255 }),
+  video_result: t.varchar({ length: 255 }),
+  tracking_result: t.varchar({ length: 255 }),
+  shot_result: t.varchar({ length: 255 }),
   created_at: t.timestamp().notNull().defaultNow(),
   updated_at: t.timestamp().notNull().defaultNow().onUpdateNow(),
 });

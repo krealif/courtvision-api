@@ -32,14 +32,44 @@ const VideoSchema = Type.Object({
   video_url: Type.String({
     description: 'The public S3 URL of the uploaded video.',
   }),
+  thumbnail_url: Type.Optional(
+    Type.String({
+      description: 'The URL of the generated thumbnail image for the video.',
+    }),
+  ),
+  video_result: Type.Union([
+    Type.String({
+      description: 'The URL to the video with overlaid analysis results.',
+    }),
+    Type.Null(),
+  ]),
+  tracking_result: Type.Union([
+    Type.String({
+      description: 'The URL to the JSON file containing player tracking data.',
+    }),
+    Type.Null(),
+  ]),
+  shot_result: Type.Union([
+    Type.String({
+      description: 'The URL to the JSON file containing shot analysis data.',
+    }),
+    Type.Null(),
+  ]),
   created_at: Type.String({
     format: 'date-time',
     description: 'The date and time when the video resource was created.',
     examples: ['2025-04-10T14:30:00Z'],
   }),
 });
-
 export type VideoJobData = Pick<Static<typeof VideoSchema>, 'id' | 'video_url'>;
+
+export const VideoJobResultSchema = Type.Object({
+  thumbnail_url: Type.Optional(Type.String()),
+  video_result: Type.Optional(Type.String()),
+  tracking_result: Type.Optional(Type.String()),
+  shot_result: Type.Optional(Type.String()),
+});
+export type VideoJobResult = Static<typeof VideoJobResultSchema>;
 
 /**
  * Request Schema
@@ -50,7 +80,7 @@ export const CreateVideoBodySchema = Type.Object({
     maxLength: 255,
     examples: ['Celtics vs Mavericks'],
     description:
-      'The title of the basketball match, typically formatted as "[Team 1] vs [Team 2]".',
+      'The title of the basketball match, typically formatted as "Team 1 vs Team 2".',
   }),
   date: Type.Optional(
     Type.String({
@@ -84,7 +114,14 @@ export const CreateVideoResponseSchema = Type.Object({
   statusCode: Type.Literal(201),
   message: Type.String(),
   data: Type.Object({
-    video: VideoSchema,
+    video: Type.Pick(VideoSchema, [
+      'id',
+      'title',
+      'date',
+      'venue',
+      'video_url',
+      'created_at',
+    ]),
   }),
 });
 export type CreateVideoResponse = Static<typeof CreateVideoResponseSchema>;
@@ -93,10 +130,19 @@ export const IndexVideosResponseSchema = Type.Object({
   statusCode: Type.Literal(200),
   message: Type.String(),
   data: Type.Object({
-    videos: Type.Array(VideoSchema),
+    videos: Type.Array(
+      Type.Pick(VideoSchema, [
+        'id',
+        'title',
+        'date',
+        'venue',
+        'status',
+        'thumbnail_url',
+        'created_at',
+      ]),
+    ),
   }),
 });
-
 export type IndexVideosResponse = Static<typeof IndexVideosResponseSchema>;
 
 export const VideoIdParamsSchema = Type.Object({
