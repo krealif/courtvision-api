@@ -3,15 +3,12 @@ import { mysqlTable as table } from 'drizzle-orm/mysql-core';
 import * as t from 'drizzle-orm/mysql-core';
 
 export const users = table('users', {
-  id: t
-    .bigint('id', { mode: 'number', unsigned: true })
-    .autoincrement()
-    .primaryKey(),
-  name: t.varchar('name', { length: 255 }).notNull(),
-  email: t.varchar('email', { length: 255 }).notNull().unique(),
-  password: t.varchar('password', { length: 255 }).notNull(),
-  created_at: t.timestamp('created_at').notNull().defaultNow(),
-  updated_at: t.timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
+  id: t.bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
+  name: t.varchar({ length: 255 }).notNull(),
+  email: t.varchar({ length: 255 }).notNull().unique(),
+  password: t.varchar({ length: 255 }).notNull(),
+  created_at: t.timestamp().notNull().defaultNow(),
+  updated_at: t.timestamp().notNull().defaultNow().onUpdateNow(),
 });
 
 export enum VideoStatus {
@@ -22,22 +19,19 @@ export enum VideoStatus {
 }
 
 export const videos = table('videos', {
-  id: t
-    .bigint('id', { mode: 'number', unsigned: true })
-    .autoincrement()
-    .primaryKey(),
+  id: t.bigint({ mode: 'number', unsigned: true }).autoincrement().primaryKey(),
   user_id: t
-    .bigint('user_id', { mode: 'number', unsigned: true })
+    .bigint({ mode: 'number', unsigned: true })
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
-  title: t.varchar('title', { length: 255 }).notNull(),
-  date: t.date('date'),
-  venue: t.varchar('venue', { length: 255 }),
-  status: t.mysqlEnum('status', VideoStatus).notNull(),
-  video_url: t.varchar('video_url', { length: 255 }).notNull(),
-  thumbnail_url: t.varchar('thumbnail_url', { length: 255 }),
-  created_at: t.timestamp('created_at').notNull().defaultNow(),
-  updated_at: t.timestamp('updated_at').notNull().defaultNow().onUpdateNow(),
+  title: t.varchar({ length: 255 }).notNull(),
+  date: t.date(),
+  venue: t.varchar({ length: 255 }),
+  status: t.mysqlEnum(VideoStatus).notNull(),
+  video_url: t.varchar({ length: 255 }).notNull(),
+  thumbnail_url: t.varchar({ length: 255 }),
+  created_at: t.timestamp().notNull().defaultNow(),
+  updated_at: t.timestamp().notNull().defaultNow().onUpdateNow(),
 });
 
 export const usersRelations = relations(users, ({ many }) => ({

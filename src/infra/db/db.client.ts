@@ -14,7 +14,11 @@ export function createDbClient({ logger }: { logger: Logger }) {
     connectionLimit: 5,
   });
 
-  const dbClient = drizzle(pool, { schema, mode: 'default' });
+  const dbClient = drizzle(pool, {
+    schema,
+    mode: 'default',
+    casing: 'snake_case',
+  });
 
   return Object.assign(dbClient, {
     async init() {
