@@ -119,6 +119,7 @@ export const CreateVideoResponseSchema = Type.Object({
       'title',
       'date',
       'venue',
+      'status',
       'video_url',
       'created_at',
     ]),

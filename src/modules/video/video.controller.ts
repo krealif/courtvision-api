@@ -39,6 +39,9 @@ export default class VideoController {
           ...video,
           date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
+          video_url: await this.s3Service.getPresignedDownloadUrl(
+            video.video_url,
+          ),
           created_at: video.created_at.toISOString(),
         },
       },
