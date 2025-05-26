@@ -28,7 +28,7 @@ export default class S3Service {
     this.bucketName = env.S3_BUCKET;
   }
 
-  private generateObjectKey(filename: string): string {
+  private generateObjectKey(filename: string, contentType: string): string {
     const uuid = crypto.randomUUID();
     const ext = path.extname(filename);
     const nameWithoutExt = path.basename(filename, ext);
@@ -36,7 +36,14 @@ export default class S3Service {
     const slug = slugify(nameWithoutExt, { lower: true, strict: true });
     const truncatedSlug = slug.slice(0, 128);
 
-    return `${truncatedSlug}-${uuid}${ext}`;
+    let folder = 'others';
+    if (contentType.startsWith('video/')) {
+      folder = 'videos';
+    } else if (contentType.startsWith('image/')) {
+      folder = 'images';
+    }
+
+    return `${folder}/${truncatedSlug}-${uuid}${ext}`;
   }
 
   /**
@@ -47,7 +54,7 @@ export default class S3Service {
     contentType: string,
     expiresIn?: number,
   ): Promise<{ url: string; method: 'PUT' }> {
-    const key = this.generateObjectKey(filename);
+    const key = this.generateObjectKey(filename, contentType);
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -73,7 +80,7 @@ export default class S3Service {
     contentType: string,
     metadata?: Record<string, string>,
   ) {
-    const key = this.generateObjectKey(filename);
+    const key = this.generateObjectKey(filename, contentType);
 
     const command = new CreateMultipartUploadCommand({
       Bucket: this.bucketName,
@@ -184,7 +191,7 @@ export default class S3Service {
    */
   async getPresignedDownloadUrl(
     key: string,
-    expiresIn?: number, // in seconds, e.g., 3600 for 1 hour
+    expiresIn?: number,
   ): Promise<string> {
     const command = new GetObjectCommand({
       Bucket: this.bucketName,

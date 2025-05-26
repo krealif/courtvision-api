@@ -3,17 +3,24 @@ import { Static, Type } from '@sinclair/typebox';
 /**
  * Request Schema
  */
-const BaseObjectSchema = Type.Object({
+const BaseUploadSchema = Type.Object({
   filename: Type.String({
     minLength: 1,
     maxLength: 128,
     description: 'The name of the file being uploaded.',
   }),
-  contentType: Type.String({
-    minLength: 1,
-    description: 'The MIME type of the file being uploaded.',
-    examples: ['video/mp4'],
-  }),
+  contentType: Type.Enum(
+    {
+      MP4: 'video/mp4',
+      JPG: 'image/jpg',
+      JPEG: 'image/jpeg',
+      PNG: 'image/png',
+    },
+    {
+      description: 'The MIME type of the file being uploaded.',
+      examples: ['video/mp4', 'image/jpg', 'image/jpeg', 'image/png'],
+    },
+  ),
 });
 
 export const UploadIdParamsSchema = Type.Object({
@@ -30,12 +37,12 @@ export const ObjectKeyQuerySchema = Type.Object({
 export type ObjectKeyQuery = Static<typeof ObjectKeyQuerySchema>;
 
 // Presigned Upload
-export const PresignedUploadBodySchema = BaseObjectSchema;
+export const PresignedUploadBodySchema = BaseUploadSchema;
 export type PresignedUploadBody = Static<typeof PresignedUploadBodySchema>;
 
 // Multipart Upload Initiation
 export const CreateMultipartUploadBodySchema = Type.Object({
-  ...BaseObjectSchema.properties,
+  ...BaseUploadSchema.properties,
   metadata: Type.Optional(
     Type.Record(Type.String(), Type.String(), {
       description:
