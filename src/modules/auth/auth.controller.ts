@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
+import S3Service from '../s3/s3.service';
 import {
   LoginBody,
   LoginResponse,
@@ -9,13 +10,16 @@ import AuthService from './auth.service';
 
 interface AuthControllerDeps {
   authService: AuthService;
+  s3Service: S3Service;
 }
 
 export default class AuthController {
   private readonly authService;
+  private readonly s3Service;
 
-  constructor({ authService }: AuthControllerDeps) {
+  constructor({ authService, s3Service }: AuthControllerDeps) {
     this.authService = authService;
+    this.s3Service = s3Service;
   }
 
   async login(
@@ -37,7 +41,9 @@ export default class AuthController {
       data: {
         user: {
           ...user,
-          photo_url: user.photo_url ?? undefined,
+          photo_url: user.photo_url
+            ? await this.s3Service.getPresignedDownloadUrl(user.photo_url)
+            : undefined,
         },
         token,
       },
@@ -63,7 +69,7 @@ export default class AuthController {
       data: {
         user: {
           ...user,
-          photo_url: user.photo_url ?? undefined,
+          photo_url: undefined,
         },
         token,
       },
