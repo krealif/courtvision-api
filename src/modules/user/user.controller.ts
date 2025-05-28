@@ -60,8 +60,10 @@ export default class UserController {
       data: {
         user: {
           ...updatedUser,
-          photo_url: user.photo_url
-            ? await this.s3Service.getPresignedDownloadUrl(user.photo_url)
+          photo_url: updatedUser.photo_url
+            ? await this.s3Service.getPresignedDownloadUrl(
+                updatedUser.photo_url,
+              )
             : undefined,
         },
       },
