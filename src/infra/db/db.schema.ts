@@ -1,4 +1,4 @@
-import { relations } from 'drizzle-orm';
+import { InferSelectModel, relations } from 'drizzle-orm';
 import { mysqlTable as table } from 'drizzle-orm/mysql-core';
 import * as t from 'drizzle-orm/mysql-core';
 
@@ -11,6 +11,7 @@ export const users = table('users', {
   created_at: t.timestamp().notNull().defaultNow(),
   updated_at: t.timestamp().notNull().defaultNow().onUpdateNow(),
 });
+export type User = InferSelectModel<typeof users>;
 
 export enum VideoStatus {
   WAITING = 'waiting',
@@ -37,6 +38,7 @@ export const videos = table('videos', {
   created_at: t.timestamp().notNull().defaultNow(),
   updated_at: t.timestamp().notNull().defaultNow().onUpdateNow(),
 });
+export type Video = InferSelectModel<typeof videos>;
 
 export const usersRelations = relations(users, ({ many }) => ({
   videos: many(videos),
