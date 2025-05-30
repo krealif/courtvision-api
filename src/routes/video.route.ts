@@ -105,10 +105,7 @@ export default function routes(app: FastifyInstance) {
         security: [{ bearerAuth: [] }],
         params: VideoSchema.VideoIdParamsSchema,
         response: {
-          204: {
-            description: 'Default Response',
-            type: 'null',
-          },
+          200: VideoSchema.DeleteVideoResponseSchema,
           401: ErrorSchema.UnauthorizedError,
           403: ErrorSchema.ForbiddenError,
           500: ErrorSchema.InternalServerError,

@@ -6,6 +6,7 @@ import {
   CompleteMultipartUploadCommand,
   CompletedPart,
   CreateMultipartUploadCommand,
+  DeleteObjectCommand,
   GetObjectCommand,
   ListPartsCommand,
   PutObjectCommand,
@@ -203,5 +204,17 @@ export default class S3Service {
     });
 
     return url;
+  }
+
+  /**
+   * Delete an object from S3
+   */
+  async deleteObject(key: string): Promise<void> {
+    const command = new DeleteObjectCommand({
+      Bucket: this.bucketName,
+      Key: key,
+    });
+
+    await this.s3.send(command);
   }
 }

@@ -51,7 +51,7 @@ export default class UserController {
 
     if (!user) return reply.notFound();
 
-    const updatedUser = await this.userService.update(userId, request.body);
+    const updatedUser = await this.userService.update(user, request.body);
     if (!updatedUser) return reply.internalServerError();
 
     return reply.code(200).send({

@@ -163,6 +163,12 @@ export const ShowVideoResponseSchema = Type.Object({
 });
 export type ShowVideoResponse = Static<typeof ShowVideoResponseSchema>;
 
+export const DeleteVideoResponseSchema = Type.Object({
+  statusCode: Type.Literal(200),
+  message: Type.String(),
+});
+export type DeleteVideoResponse = Static<typeof DeleteVideoResponseSchema>;
+
 export const VideoProgressResponseSchema = Type.Object({
   data: Type.Object({
     video: Type.Object({

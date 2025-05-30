@@ -1,49 +1,56 @@
 import { eq } from 'drizzle-orm';
 import { DbClient } from '@/infra/db';
-import { users } from '@/infra/db/db.schema';
+import { User, users } from '@/infra/db/db.schema';
 import { DbValidator, v } from '@/utils/db-validator.util';
+import S3Service from '../s3/s3.service';
 import { UpdateUserBody } from './user.schema';
 
 interface UserServiceDeps {
   db: DbClient;
   dbValidator: DbValidator;
+  s3Service: S3Service;
 }
 
 export default class UserService {
   private readonly db;
   private readonly dbValidator;
+  private readonly s3Service;
 
-  constructor({ db, dbValidator }: UserServiceDeps) {
+  constructor({ db, dbValidator, s3Service }: UserServiceDeps) {
     this.db = db;
     this.dbValidator = dbValidator;
+    this.s3Service = s3Service;
   }
 
   async findById(userId: number) {
     const user = await this.db.query.users.findFirst({
       where: eq(users.id, userId),
-      columns: {
-        password: false,
-      },
     });
 
     return user;
   }
 
-  async update(userId: number, { name, email, photo_url }: UpdateUserBody) {
+  async update(user: User, { name, email, photo_url }: UpdateUserBody) {
     await this.dbValidator.validate(
       { email },
       {
-        email: v.unique({ table: users, column: 'email', ignoreId: userId }),
+        email: v.unique({ table: users, column: 'email', ignoreId: user.id }),
       },
     );
 
     let objectKey: string | undefined;
 
+    // If a new photo URL is provided, extract the object key from the full URL
     if (photo_url) {
       const pathSegments = new URL(photo_url).pathname
         .split('/')
         .filter(Boolean);
       objectKey = pathSegments.slice(1).join('/');
+
+      // Remove old photo
+      if (user.photo_url) {
+        await this.s3Service.deleteObject(user.photo_url);
+      }
     }
 
     await this.db
@@ -53,15 +60,15 @@ export default class UserService {
         email,
         photo_url: objectKey,
       })
-      .where(eq(users.id, userId));
+      .where(eq(users.id, user.id));
 
-    const user = await this.db.query.users.findFirst({
-      where: eq(users.id, userId),
+    const updatedUser = await this.db.query.users.findFirst({
+      where: eq(users.id, user.id),
       columns: {
         password: false,
       },
     });
 
-    return user;
+    return updatedUser;
   }
 }

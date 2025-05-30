@@ -69,7 +69,7 @@ export default class VideoController {
 
     return reply.code(200).send({
       statusCode: 200,
-      message: 'msg',
+      message: 'Videos retrieved successfully.',
       data: {
         videos: responseVideos,
       },
@@ -91,26 +91,38 @@ export default class VideoController {
     if (!video) return reply.notFound();
     if (video.user_id !== userId) return reply.forbidden();
 
-    const getNullableUrl = (key: string | null | undefined) =>
+    const getPresignedOrNull = (key?: string | null) =>
       key ? this.s3Service.getPresignedDownloadUrl(key) : null;
+
+    const [
+      video_url,
+      thumbnail_url,
+      video_result,
+      tracking_result,
+      shot_result,
+    ] = await Promise.all([
+      this.s3Service.getPresignedDownloadUrl(video.video_url),
+      video.thumbnail_url
+        ? this.s3Service.getPresignedDownloadUrl(video.thumbnail_url)
+        : undefined,
+      getPresignedOrNull(video.video_result),
+      getPresignedOrNull(video.tracking_result),
+      getPresignedOrNull(video.shot_result),
+    ]);
 
     return reply.code(200).send({
       statusCode: 200,
-      message: 'msg',
+      message: 'Video retrieved successfully.',
       data: {
         video: {
           ...video,
           date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
-          video_url: await this.s3Service.getPresignedDownloadUrl(
-            video.video_url,
-          ),
-          thumbnail_url: video.thumbnail_url
-            ? await this.s3Service.getPresignedDownloadUrl(video.thumbnail_url)
-            : undefined,
-          video_result: await getNullableUrl(video.video_result),
-          tracking_result: await getNullableUrl(video.tracking_result),
-          shot_result: await getNullableUrl(video.shot_result),
+          video_url,
+          thumbnail_url,
+          video_result,
+          tracking_result,
+          shot_result,
           created_at: video.created_at.toISOString(),
         },
       },
@@ -133,9 +145,12 @@ export default class VideoController {
     if (video.user_id !== userId || !allowedStatuses.includes(video.status))
       return reply.forbidden();
 
-    await this.videoService.delete(video.id);
+    await this.videoService.delete(video);
 
-    return reply.code(204).send();
+    return reply.code(200).send({
+      statusCode: 200,
+      message: 'Video deleted successfully.',
+    });
   }
 
   streamProgress(request: FastifyRequest, reply: FastifyReply) {
