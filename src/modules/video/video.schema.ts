@@ -22,7 +22,7 @@ const VideoSchema = Type.Object({
   venue: Type.Optional(
     Type.String({
       examples: ['TD Garden Boston'],
-      description: 'The location or arena where where the match was played.',
+      description: 'The location or arena where the match was played.',
     }),
   ),
   status: Type.Enum(VideoStatus, {
@@ -95,7 +95,7 @@ export const CreateVideoBodySchema = Type.Object({
       minLength: 1,
       maxLength: 255,
       examples: ['TD Garden Boston'],
-      description: 'The location or arena where where the match was played.',
+      description: 'The location or arena where the match was played.',
     }),
   ),
   video_url: Type.String({
