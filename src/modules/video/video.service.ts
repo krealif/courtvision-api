@@ -37,7 +37,7 @@ export default class VideoService {
     const pathSegments = new URL(video_url).pathname.split('/').filter(Boolean);
     const objectKey = pathSegments.slice(1).join('/');
 
-    return await this.db.transaction(async (tx) => {
+    const insertId = await this.db.transaction(async (tx) => {
       const [result] = await tx.insert(videos).values({
         user_id: userId,
         title,
@@ -58,12 +58,14 @@ export default class VideoService {
         },
       });
 
-      const video = await tx.query.videos.findFirst({
-        where: eq(videos.id, result.insertId),
-      });
-
-      return video;
+      return result.insertId;
     });
+
+    const video = await this.db.query.videos.findFirst({
+      where: eq(videos.id, insertId),
+    });
+
+    return video;
   }
 
   async findAll(userId: number) {
