@@ -1,16 +1,16 @@
-import { JobProgress } from 'bullmq';
+import { JobProgress, Queue, QueueEvents } from 'bullmq';
 import { desc, eq } from 'drizzle-orm';
 import hyperid from 'hyperid';
 import { DbClient } from '@/infra/db';
 import { Video, VideoStatus, videos } from '@/infra/db/db.schema';
-import { QueueManager } from '@/infra/queue/queue.manager';
 import S3Service from '../s3/s3.service';
 import { CreateVideoBody, VideoJobData } from './video.schema';
 
 interface VideoServiceDeps {
   db: DbClient;
-  queueManager: QueueManager;
   s3Service: S3Service;
+  videoQueue: Queue<VideoJobData>;
+  videoQueueEvents: QueueEvents;
 }
 
 interface JobProgressCallbacks {
@@ -21,13 +21,20 @@ interface JobProgressCallbacks {
 
 export default class VideoService {
   private readonly db;
-  private readonly queueManager;
   private readonly s3Service;
+  private readonly videoQueue;
+  private readonly videoQueueEvents;
 
-  constructor({ db, queueManager, s3Service }: VideoServiceDeps) {
+  constructor({
+    db,
+    s3Service,
+    videoQueue,
+    videoQueueEvents,
+  }: VideoServiceDeps) {
     this.db = db;
-    this.queueManager = queueManager;
+    this.videoQueue = videoQueue;
     this.s3Service = s3Service;
+    this.videoQueueEvents = videoQueueEvents;
   }
 
   async create(
@@ -47,16 +54,16 @@ export default class VideoService {
         status: VideoStatus.WAITING,
       });
 
-      await this.queueManager.addJob<VideoJobData>('videoQueue', {
-        name: 'video-analysis',
-        data: {
+      await this.videoQueue.add(
+        'videoQueue',
+        {
           id: result.insertId,
           video_url: objectKey,
         },
-        options: {
+        {
           jobId: `v${result.insertId}_${userId}-${hyperid()()}`,
         },
-      });
+      );
 
       return result.insertId;
     });
@@ -103,7 +110,7 @@ export default class VideoService {
   }
 
   subscribeToJobProgress(callbacks: JobProgressCallbacks) {
-    const queueEvents = this.queueManager.getQueueEvent('videoQueue');
+    const queueEvents = this.videoQueueEvents;
 
     queueEvents.on('progress', callbacks.onProgress);
     queueEvents.on('completed', callbacks.onCompleted);

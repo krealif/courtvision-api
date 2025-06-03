@@ -3,7 +3,7 @@ import { Lifetime, asClass, asFunction, asValue } from 'awilix';
 import fp from 'fastify-plugin';
 import { diContainer, fastifyAwilixPlugin } from '@fastify/awilix';
 import { createDbClient } from '@/infra/db';
-import { QueueManager } from '@/infra/queue/queue.manager';
+import { videoQueue, videoQueueEvents } from '@/infra/queue/video.queue';
 import { createS3Client } from '@/infra/storage';
 import { DbValidator } from '@/utils/db-validator.util';
 
@@ -31,11 +31,13 @@ export default fp(async (fastify) => {
     }),
     s3: asFunction(createS3Client).singleton(),
     dbValidator: asClass(DbValidator).singleton(),
-    queueManager: asClass(QueueManager, {
+    videoQueue: asFunction(() => videoQueue, {
       lifetime: Lifetime.SINGLETON,
-      asyncInit: 'init',
       asyncDispose: 'close',
-      eagerInject: true,
+    }),
+    videoQueueEvents: asFunction(() => videoQueueEvents, {
+      lifetime: Lifetime.SINGLETON,
+      asyncDispose: 'close',
     }),
   });
 

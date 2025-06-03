@@ -1,26 +1,26 @@
+import { QueueEvents } from 'bullmq';
 import { eq } from 'drizzle-orm';
 import { Value } from '@sinclair/typebox/value';
 import { DbClient } from '@/infra/db';
 import { VideoStatus, videos } from '@/infra/db/db.schema';
-import { QueueManager } from '@/infra/queue/queue.manager';
 import { VideoJobResultSchema } from './video.schema';
 
 interface VideoQueueEventDeps {
   db: DbClient;
-  queueManager: QueueManager;
+  videoQueueEvents: QueueEvents;
 }
 
 export default class VideoQueueEvent {
   private readonly db;
-  private readonly queueManager;
+  private readonly videoQueueEvents;
 
-  constructor({ db, queueManager }: VideoQueueEventDeps) {
+  constructor({ db, videoQueueEvents }: VideoQueueEventDeps) {
     this.db = db;
-    this.queueManager = queueManager;
+    this.videoQueueEvents = videoQueueEvents;
   }
 
   init() {
-    const queue = this.queueManager.getQueueEvent('videoQueue');
+    const queue = this.videoQueueEvents;
 
     queue.on('active', ({ jobId }) => {
       void this.handleActiveEvent(jobId);
