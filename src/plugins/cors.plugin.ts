@@ -12,5 +12,6 @@ export default fp<FastifyCorsOptions>(async (fastify) => {
   await fastify.register(cors, {
     origin: env.ALLOWED_ORIGIN ?? true,
     credentials: true,
+    methods: ['GET', 'HEAD', 'POST', 'PUT', 'DELETE'],
   });
 });
