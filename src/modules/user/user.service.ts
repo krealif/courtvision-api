@@ -5,22 +5,12 @@ import { DbValidator, v } from '@/utils/db-validator.util';
 import S3Service from '../s3/s3.service';
 import { UpdateUserBody } from './user.schema';
 
-interface UserServiceDeps {
-  db: DbClient;
-  dbValidator: DbValidator;
-  s3Service: S3Service;
-}
-
 export default class UserService {
-  private readonly db;
-  private readonly dbValidator;
-  private readonly s3Service;
-
-  constructor({ db, dbValidator, s3Service }: UserServiceDeps) {
-    this.db = db;
-    this.dbValidator = dbValidator;
-    this.s3Service = s3Service;
-  }
+  constructor(
+    private readonly db: DbClient,
+    private readonly dbValidator: DbValidator,
+    private readonly s3Service: S3Service,
+  ) {}
 
   async findById(userId: number) {
     const user = await this.db.query.users.findFirst({

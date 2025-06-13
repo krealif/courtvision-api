@@ -5,19 +5,11 @@ import { users } from '@/infra/db/db.schema';
 import { DbValidator, v } from '@/utils/db-validator.util';
 import { LoginBody, SignupBody } from './auth.schema';
 
-interface AuthServiceDeps {
-  db: DbClient;
-  dbValidator: DbValidator;
-}
-
 export default class AuthService {
-  private readonly db;
-  private readonly dbValidator;
-
-  constructor({ db, dbValidator }: AuthServiceDeps) {
-    this.db = db;
-    this.dbValidator = dbValidator;
-  }
+  constructor(
+    private readonly db: DbClient,
+    private readonly dbValidator: DbValidator,
+  ) {}
 
   async verify({ email, password }: LoginBody) {
     const user = await this.db.query.users.findFirst({

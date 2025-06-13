@@ -5,19 +5,11 @@ import S3Service from '../s3/s3.service';
 import * as VideoSchema from './video.schema';
 import VideoService from './video.service';
 
-interface VideoControllerDeps {
-  videoService: VideoService;
-  s3Service: S3Service;
-}
-
 export default class VideoController {
-  private readonly videoService;
-  private readonly s3Service;
-
-  constructor({ videoService, s3Service }: VideoControllerDeps) {
-    this.videoService = videoService;
-    this.s3Service = s3Service;
-  }
+  constructor(
+    private readonly videoService: VideoService,
+    private readonly s3Service: S3Service,
+  ) {}
 
   async create(
     request: FastifyRequest<{

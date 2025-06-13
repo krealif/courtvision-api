@@ -6,13 +6,6 @@ import { Video, VideoStatus, videos } from '@/infra/db/db.schema';
 import S3Service from '../s3/s3.service';
 import { CreateVideoBody, VideoJobData } from './video.schema';
 
-interface VideoServiceDeps {
-  db: DbClient;
-  s3Service: S3Service;
-  videoQueue: Queue<VideoJobData>;
-  videoQueueEvents: QueueEvents;
-}
-
 interface JobProgressCallbacks {
   onProgress: ({ jobId, data }: { jobId: string; data: JobProgress }) => void;
   onCompleted: ({ jobId }: { jobId: string }) => void;
@@ -20,22 +13,12 @@ interface JobProgressCallbacks {
 }
 
 export default class VideoService {
-  private readonly db;
-  private readonly s3Service;
-  private readonly videoQueue;
-  private readonly videoQueueEvents;
-
-  constructor({
-    db,
-    s3Service,
-    videoQueue,
-    videoQueueEvents,
-  }: VideoServiceDeps) {
-    this.db = db;
-    this.videoQueue = videoQueue;
-    this.s3Service = s3Service;
-    this.videoQueueEvents = videoQueueEvents;
-  }
+  constructor(
+    private readonly db: DbClient,
+    private readonly s3Service: S3Service,
+    private readonly videoQueue: Queue<VideoJobData>,
+    private readonly videoQueueEvents: QueueEvents,
+  ) {}
 
   async create(
     userId: number,

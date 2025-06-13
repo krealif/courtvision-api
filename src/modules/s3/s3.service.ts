@@ -16,18 +16,10 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { env } from '@/config';
 
-interface S3ServiceDeps {
-  s3: S3Client;
-}
-
 export default class S3Service {
-  private readonly s3;
-  private readonly bucketName;
+  private readonly bucketName = env.S3_BUCKET;
 
-  constructor({ s3 }: S3ServiceDeps) {
-    this.s3 = s3;
-    this.bucketName = env.S3_BUCKET;
-  }
+  constructor(private readonly s3: S3Client) {}
 
   private generateObjectKey(filename: string, contentType: string): string {
     const uuid = crypto.randomUUID();

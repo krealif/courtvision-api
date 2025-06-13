@@ -8,7 +8,7 @@ export type DbClient = MySql2Database<typeof schema> & {
   $client: mysql.Pool;
 };
 
-export function createDbClient({ logger }: { logger: Logger }) {
+export function createDbClient(logger: Logger) {
   const pool = mysql.createPool({
     uri: env.DB_URL,
     connectionLimit: 5,

@@ -97,7 +97,7 @@ export class DbValidationError extends Error {
 export class DbValidator {
   private readonly db;
 
-  constructor({ db }: { db: DbClient }) {
+  constructor(db: DbClient) {
     this.db = db;
   }
 

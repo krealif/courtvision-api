@@ -1,7 +1,7 @@
 import path from 'node:path';
 import { Lifetime, asClass, asFunction, asValue } from 'awilix';
 import fp from 'fastify-plugin';
-import { diContainer, fastifyAwilixPlugin } from '@fastify/awilix';
+import { diContainerClassic, fastifyAwilixPlugin } from '@fastify/awilix';
 import { createDbClient } from '@/infra/db';
 import { videoQueue, videoQueueEvents } from '@/infra/queue/video.queue';
 import { createS3Client } from '@/infra/storage';
@@ -14,6 +14,7 @@ import { DbValidator } from '@/utils/db-validator.util';
  */
 export default fp(async (fastify) => {
   await fastify.register(fastifyAwilixPlugin, {
+    container: diContainerClassic,
     disposeOnClose: true,
     disposeOnResponse: true,
     strictBooleanEnforced: true,
@@ -21,7 +22,7 @@ export default fp(async (fastify) => {
     asyncDispose: true,
   });
 
-  diContainer.register({
+  diContainerClassic.register({
     logger: asValue(fastify.log),
     db: asFunction(createDbClient, {
       lifetime: Lifetime.SINGLETON,
@@ -41,7 +42,7 @@ export default fp(async (fastify) => {
     }),
   });
 
-  diContainer.loadModules(
+  diContainerClassic.loadModules(
     [
       path.join(__dirname, '../modules/**/*.controller.{ts,js}'),
       path.join(__dirname, '../modules/**/*.service.{ts,js}'),
@@ -55,7 +56,7 @@ export default fp(async (fastify) => {
     },
   );
 
-  diContainer.loadModules(
+  diContainerClassic.loadModules(
     [path.join(__dirname, '../modules/**/*.queueEvent.{ts,js}')],
     {
       formatName: 'camelCase',

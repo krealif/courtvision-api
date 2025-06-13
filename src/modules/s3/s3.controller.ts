@@ -2,16 +2,8 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import * as S3Schema from './s3.schema';
 import S3Service from './s3.service';
 
-interface S3ControllerDeps {
-  s3Service: S3Service;
-}
-
 export default class S3Controller {
-  private readonly s3Service;
-
-  constructor({ s3Service }: S3ControllerDeps) {
-    this.s3Service = s3Service;
-  }
+  constructor(private readonly s3Service: S3Service) {}
 
   async getPresignedUploadUrl(
     request: FastifyRequest<{

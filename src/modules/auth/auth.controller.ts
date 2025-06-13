@@ -8,19 +8,11 @@ import {
 } from './auth.schema';
 import AuthService from './auth.service';
 
-interface AuthControllerDeps {
-  authService: AuthService;
-  s3Service: S3Service;
-}
-
 export default class AuthController {
-  private readonly authService;
-  private readonly s3Service;
-
-  constructor({ authService, s3Service }: AuthControllerDeps) {
-    this.authService = authService;
-    this.s3Service = s3Service;
-  }
+  constructor(
+    private readonly authService: AuthService,
+    private readonly s3Service: S3Service,
+  ) {}
 
   async login(
     request: FastifyRequest<{ Body: LoginBody; Reply: LoginResponse }>,

@@ -3,19 +3,11 @@ import S3Service from '../s3/s3.service';
 import * as UserSchema from './user.schema';
 import UserService from './user.service';
 
-interface UserControllerDeps {
-  userService: UserService;
-  s3Service: S3Service;
-}
-
 export default class UserController {
-  private readonly userService;
-  private readonly s3Service;
-
-  constructor({ userService, s3Service }: UserControllerDeps) {
-    this.userService = userService;
-    this.s3Service = s3Service;
-  }
+  constructor(
+    private readonly userService: UserService,
+    private readonly s3Service: S3Service,
+  ) {}
 
   async show(
     request: FastifyRequest<{ Reply: UserSchema.ShowUserResponse }>,

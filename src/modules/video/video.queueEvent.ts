@@ -5,19 +5,11 @@ import { DbClient } from '@/infra/db';
 import { VideoStatus, videos } from '@/infra/db/db.schema';
 import { VideoJobResultSchema } from './video.schema';
 
-interface VideoQueueEventDeps {
-  db: DbClient;
-  videoQueueEvents: QueueEvents;
-}
-
 export default class VideoQueueEvent {
-  private readonly db;
-  private readonly videoQueueEvents;
-
-  constructor({ db, videoQueueEvents }: VideoQueueEventDeps) {
-    this.db = db;
-    this.videoQueueEvents = videoQueueEvents;
-  }
+  constructor(
+    private readonly db: DbClient,
+    private readonly videoQueueEvents: QueueEvents,
+  ) {}
 
   init() {
     const queue = this.videoQueueEvents;
