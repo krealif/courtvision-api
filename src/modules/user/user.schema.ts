@@ -22,19 +22,23 @@ export const UserSchema = Type.Object({
 });
 
 export const UpdateUserBodySchema = Type.Object({
-  name: Type.String({
-    minLength: 1,
-    maxLength: 255,
-    examples: ['Alice'],
-    description: "The user's full name.",
-  }),
-  email: Type.String({
-    minLength: 1,
-    maxLength: 255,
-    format: 'email',
-    examples: ['alice@example.com'],
-    description: "The user's email address.",
-  }),
+  name: Type.Optional(
+    Type.String({
+      minLength: 1,
+      maxLength: 255,
+      examples: ['Alice'],
+      description: "The user's full name.",
+    }),
+  ),
+  email: Type.Optional(
+    Type.String({
+      minLength: 1,
+      maxLength: 255,
+      format: 'email',
+      examples: ['alice@example.com'],
+      description: "The user's email address.",
+    }),
+  ),
   photo_url: Type.Optional(
     Type.String({
       format: 'uri',
