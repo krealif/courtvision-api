@@ -13,6 +13,7 @@
     "start": "node dist/index.js",
     "dev": "tsx watch --env-file=.env ./src",
     "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "test": "vitest run --pool=forks",
     "lint": "eslint",
     "lint:fix": "npm run lint --fix",
     "db:studio": "drizzle-kit studio",
@@ -70,6 +71,7 @@
     "tsc-alias": "^1.8.16",
     "tsx": "^4.20.3",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.34.0"
+    "typescript-eslint": "^8.34.0",
+    "vitest": "^3.2.3"
   }
 }
