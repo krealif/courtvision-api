@@ -1,14 +1,15 @@
 import { FastifyInstance } from 'fastify';
-import { afterAll, beforeAll, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { DbClient } from '@/infra/db';
 import { users } from '@/infra/db/db.schema';
 import { ShowUserResponse } from '@/modules/user/user.schema';
 import createServer from '@/server';
 
 let server: FastifyInstance;
+let db: DbClient;
 let token: string;
 
-const userData = {
+const testUser = {
   name: 'Alice',
   email: 'alice2@example.com',
   password: '$2b$10$GPbxrbtKSoyJa/52ECuOH.m1gsDbVNaCPP3t7gvAOS0dIDw0Yclim',
@@ -16,69 +17,96 @@ const userData = {
 
 beforeAll(async () => {
   server = await createServer();
-  const db = server.diContainer.resolve<DbClient>('db');
-
-  await db.delete(users);
-  const [result] = await db.insert(users).values(userData);
-
-  token = server.jwt.sign({
-    id: result.insertId,
-    email: userData.email,
-  });
+  db = server.diContainer.resolve('db');
 });
 
 afterAll(async () => {
-  await server.diContainer.dispose();
   await server.close();
 });
 
-it('should return user profile when authenticated', async () => {
-  const response = await server.inject({
-    method: 'GET',
-    url: '/api/users/profile',
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
+beforeEach(async () => {
+  await db.delete(users);
+
+  const [result] = await db.insert(users).values(testUser);
+
+  token = server.jwt.sign({
+    id: result.insertId,
+    email: testUser.email,
   });
-
-  const body: ShowUserResponse = response.json();
-
-  expect(response.statusCode).toBe(200);
-  expect(body.data.user).toHaveProperty('email', userData.email);
 });
 
-it('should return 401 if not authenticated', async () => {
-  const response = await server.inject({
-    method: 'GET',
-    url: '/api/users/profile',
+describe('Retrieve Profile', () => {
+  it('should return user profile when authenticated', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/users/profile',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    });
+
+    const body: ShowUserResponse = response.json();
+
+    expect(response.statusCode).toBe(200);
+    expect(body.data.user).toHaveProperty('email', testUser.email);
   });
 
-  expect(response.statusCode).toBe(401);
+  it('should return 401 if not authenticated', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/users/profile',
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toHaveProperty('error');
+  });
 });
 
-it('should update user profile', async () => {
-  const response = await server.inject({
-    method: 'PUT',
-    url: '/api/users/profile',
-    payload: {
-      name: 'Alice Updated',
-      photo_url: 'https://minio.test/cv/avatar.png',
-    },
-    headers: {
-      authorization: `Bearer ${token}`,
-    },
-  });
+describe('Edit Profile', () => {
+  it('should update user profile successfully', async () => {
+    const response = await server.inject({
+      method: 'PUT',
+      url: '/api/users/profile',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+      payload: {
+        name: 'Alice Updated',
+        photo_url: 'https://minio.test/cv/avatar.png',
+      },
+    });
 
-  const body: ShowUserResponse = response.json();
+    expect(response.statusCode).toBe(200);
 
-  expect(response.statusCode).toBe(200);
-  expect(body.data.user).toHaveProperty('name', 'Alice Updated');
-  expect(body.data.user).toHaveProperty('email', userData.email);
+    const body: ShowUserResponse = response.json();
+    expect(body.data.user).toHaveProperty('name', 'Alice Updated');
+    expect(body.data.user).toHaveProperty('email', testUser.email);
 
-  const photoUrl = body.data.user.photo_url;
-
-  if (photoUrl) {
+    const photoUrl = body.data.user.photo_url;
     expect(typeof photoUrl).toBe('string');
-    expect(() => new URL(photoUrl)).not.toThrow();
-  }
+    expect(() => new URL(photoUrl!)).not.toThrow();
+  });
+
+  it('should return 400 when updating with an existing email', async () => {
+    await db.insert(users).values({
+      ...testUser,
+      email: 'alice3@example.com',
+    });
+
+    const response = await server.inject({
+      method: 'PUT',
+      url: '/api/users/profile',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+      payload: {
+        name: 'Alice Updated',
+        email: 'alice3@example.com',
+        photo_url: 'https://minio.test/cv/avatar.png',
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toHaveProperty('error');
+  });
 });
