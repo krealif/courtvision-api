@@ -51,7 +51,7 @@ describe('Retrieve Profile', () => {
     expect(body.data.user).toHaveProperty('email', testUser.email);
   });
 
-  it('should return 401 if not authenticated', async () => {
+  it('should deny access when the user is unauthenticated', async () => {
     const response = await server.inject({
       method: 'GET',
       url: '/api/users/profile',
@@ -87,7 +87,7 @@ describe('Edit Profile', () => {
     expect(() => new URL(photoUrl!)).not.toThrow();
   });
 
-  it('should return 400 when updating with an existing email', async () => {
+  it('should return an error when updating with an existing email', async () => {
     await db.insert(users).values({
       ...testUser,
       email: 'alice3@example.com',

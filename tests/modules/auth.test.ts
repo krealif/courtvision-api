@@ -14,6 +14,8 @@ const testUser = {
   email: 'alice1@example.com',
   password: 'Password123!',
 };
+const hashedPassword =
+  '$2b$10$GPbxrbtKSoyJa/52ECuOH.m1gsDbVNaCPP3t7gvAOS0dIDw0Yclim';
 
 beforeAll(async () => {
   server = await createServer();
@@ -29,12 +31,18 @@ describe('Register', () => {
     await db.delete(users);
   });
 
-  it('should successfully register a new user', async () => {
+  it('should register a new user successfully', async () => {
     const response = await server.inject({
       method: 'POST',
       url: '/api/auth/register',
       payload: testUser,
     });
+
+    const body: SignupResponse = response.json();
+
+    expect(response.statusCode).toBe(201);
+    expect(body.data).toHaveProperty('token');
+    expect(body.data.user).toHaveProperty('email', testUser.email);
 
     const savedUser = await db.query.users.findFirst({
       where: eq(users.email, testUser.email),
@@ -42,15 +50,9 @@ describe('Register', () => {
 
     expect(savedUser).toBeTruthy();
     expect(savedUser?.password).not.toBe(testUser.password);
-
-    const body: SignupResponse = response.json();
-
-    expect(response.statusCode).toBe(201);
-    expect(body.data).toHaveProperty('token');
-    expect(body.data.user).toHaveProperty('email', testUser.email);
   });
 
-  it('should fail when registering with existing email', async () => {
+  it('should return an error when registering with an existing email', async () => {
     await db.insert(users).values({
       ...testUser,
       password: '$2b$10$hashedexample',
@@ -77,11 +79,11 @@ describe('Login', () => {
 
     await db.insert(users).values({
       ...testUser,
-      password: '$2b$10$GPbxrbtKSoyJa/52ECuOH.m1gsDbVNaCPP3t7gvAOS0dIDw0Yclim',
+      password: hashedPassword,
     });
   });
 
-  it('should successfully log in with valid credentials', async () => {
+  it('should log in successfully with valid credentials', async () => {
     const response = await server.inject({
       method: 'POST',
       url: '/api/auth/login',
@@ -98,7 +100,7 @@ describe('Login', () => {
     expect(body.data.user).toHaveProperty('email', testUser.email);
   });
 
-  it('should fail login with incorrect password', async () => {
+  it('should return an error when password is incorrect', async () => {
     const response = await server.inject({
       method: 'POST',
       url: '/api/auth/login',
