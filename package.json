@@ -12,7 +12,7 @@
     "prepare": "husky",
     "start": "node dist/index.js",
     "dev": "tsx watch --env-file=.env ./src",
-    "build": "tsc --project tsconfig.json && tsc-alias -p tsconfig.json",
+    "build": "tsc --project tsconfig.build.json && tsc-alias -p tsconfig.build.json",
     "test": "vitest run --pool=forks",
     "lint": "eslint",
     "lint:fix": "npm run lint --fix",
