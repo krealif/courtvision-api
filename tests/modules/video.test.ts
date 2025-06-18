@@ -51,6 +51,149 @@ beforeEach(async () => {
   testUserId = result.insertId;
 });
 
+describe('List All Videos', () => {
+  it('should return only the videos that belong to the authenticated user', async () => {
+    const [otherUser] = await db.insert(users).values(testUser2);
+
+    await db.insert(videos).values([
+      {
+        user_id: testUserId,
+        title: 'Basketball Match 1',
+        video_url: 'video/match.mp4',
+        status: VideoStatus.WAITING,
+      },
+      {
+        user_id: testUserId,
+        title: 'Basketball Match 2',
+        video_url: 'video/match2.mp4',
+        status: VideoStatus.COMPLETED,
+      },
+      {
+        user_id: otherUser.insertId,
+        title: 'Other Match',
+        video_url: 'video/other.mp4',
+        status: VideoStatus.COMPLETED,
+      },
+    ]);
+
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/videos',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const body: IndexVideosResponse = response.json();
+
+    expect(response.statusCode).toBe(200);
+    expect(body.data.videos).toHaveLength(2);
+  });
+
+  it('should return an empty list when the user has no videos', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/videos',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const body: IndexVideosResponse = response.json();
+
+    expect(response.statusCode).toBe(200);
+    expect(body.data.videos).toEqual([]);
+  });
+
+  it('should deny access when the user is unauthenticated', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/api/videos',
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toHaveProperty('error');
+  });
+});
+
+describe('Retrive Video', () => {
+  let userVideoId: number;
+  let otherVideoId: number;
+
+  beforeEach(async () => {
+    const [otherUser] = await db.insert(users).values(testUser2);
+
+    const [video1] = await db.insert(videos).values([
+      {
+        user_id: testUserId,
+        title: 'Basketball Match 2',
+        video_url: 'video/match2.mp4',
+        status: VideoStatus.COMPLETED,
+      },
+    ]);
+
+    const [video2] = await db.insert(videos).values([
+      {
+        user_id: otherUser.insertId,
+        title: 'Basketball Match 2',
+        video_url: 'video/match2.mp4',
+        status: VideoStatus.COMPLETED,
+      },
+    ]);
+
+    userVideoId = video1.insertId;
+    otherVideoId = video2.insertId;
+  });
+
+  it('should return the video when it belongs to the authenticated user', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: `/api/videos/${userVideoId}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    expect(response.statusCode).toBe(200);
+  });
+
+  it('should deny access when the video belongs to another user', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: `/api/videos/${otherVideoId}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    expect(response.statusCode).toBe(403);
+    expect(response.json()).toHaveProperty('error');
+  });
+
+  it('should deny access when the user is unauthenticated', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: `/api/videos/${userVideoId}`,
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toHaveProperty('error');
+  });
+
+  it("should return an error when the video doesn't exist", async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: `/api/videos/${otherVideoId + 1}`,
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    expect(response.statusCode).toBe(404);
+    expect(response.json()).toHaveProperty('error');
+  });
+});
+
 describe('Analyse Video', () => {
   let videoWorker: Worker;
 
@@ -191,147 +334,21 @@ describe('Analyse Video', () => {
 
     expect(videoFromDb?.status).toBe(VideoStatus.FAILED);
   });
-});
-
-describe('List All Videos', () => {
-  it('should return an empty list when the user has no videos', async () => {
-    const response = await server.inject({
-      method: 'GET',
-      url: '/api/videos',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const body: IndexVideosResponse = response.json();
-
-    expect(response.statusCode).toBe(200);
-    expect(body.data.videos).toEqual([]);
-  });
-
-  it('should return only the videos that belong to the authenticated user', async () => {
-    const [otherUser] = await db.insert(users).values(testUser2);
-
-    await db.insert(videos).values([
-      {
-        user_id: testUserId,
-        title: 'Basketball Match 1',
-        video_url: 'video/match.mp4',
-        status: VideoStatus.WAITING,
-      },
-      {
-        user_id: testUserId,
-        title: 'Basketball Match 2',
-        video_url: 'video/match2.mp4',
-        status: VideoStatus.COMPLETED,
-      },
-      {
-        user_id: otherUser.insertId,
-        title: 'Other Match',
-        video_url: 'video/other.mp4',
-        status: VideoStatus.COMPLETED,
-      },
-    ]);
-
-    const response = await server.inject({
-      method: 'GET',
-      url: '/api/videos',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    const body: IndexVideosResponse = response.json();
-
-    expect(response.statusCode).toBe(200);
-    expect(body.data.videos).toHaveLength(2);
-  });
 
   it('should deny access when the user is unauthenticated', async () => {
+    const payload = {
+      title: 'Celtics vs Mavericks',
+      video_url: 'http://minio.test/cv/match.mp4',
+    };
+
     const response = await server.inject({
-      method: 'GET',
+      method: 'POST',
       url: '/api/videos',
+      // No Authorization header
+      payload,
     });
 
     expect(response.statusCode).toBe(401);
-    expect(response.json()).toHaveProperty('error');
-  });
-});
-
-describe('Retrive Video', () => {
-  let userVideoId: number;
-  let otherVideoId: number;
-
-  beforeEach(async () => {
-    const [otherUser] = await db.insert(users).values(testUser2);
-
-    const [video1] = await db.insert(videos).values([
-      {
-        user_id: testUserId,
-        title: 'Basketball Match 2',
-        video_url: 'video/match2.mp4',
-        status: VideoStatus.COMPLETED,
-      },
-    ]);
-
-    const [video2] = await db.insert(videos).values([
-      {
-        user_id: otherUser.insertId,
-        title: 'Basketball Match 2',
-        video_url: 'video/match2.mp4',
-        status: VideoStatus.COMPLETED,
-      },
-    ]);
-
-    userVideoId = video1.insertId;
-    otherVideoId = video2.insertId;
-  });
-
-  it('should deny access when the user is unauthenticated', async () => {
-    const response = await server.inject({
-      method: 'GET',
-      url: `/api/videos/${userVideoId}`,
-    });
-
-    expect(response.statusCode).toBe(401);
-    expect(response.json()).toHaveProperty('error');
-  });
-
-  it("should return an error when the video doesn't exist", async () => {
-    const response = await server.inject({
-      method: 'GET',
-      url: `/api/videos/${otherVideoId + 1}`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    expect(response.statusCode).toBe(404);
-    expect(response.json()).toHaveProperty('error');
-  });
-
-  it('should return the video when it belongs to the authenticated user', async () => {
-    const response = await server.inject({
-      method: 'GET',
-      url: `/api/videos/${userVideoId}`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    expect(response.statusCode).toBe(200);
-  });
-
-  it('should deny access when the video belongs to another user', async () => {
-    const response = await server.inject({
-      method: 'GET',
-      url: `/api/videos/${otherVideoId}`,
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    expect(response.statusCode).toBe(403);
     expect(response.json()).toHaveProperty('error');
   });
 });

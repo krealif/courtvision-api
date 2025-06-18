@@ -71,6 +71,26 @@ describe('Register', () => {
     expect(response.statusCode).toBe(400);
     expect(response.json()).toHaveProperty('error');
   });
+
+  it('should return a validation error when data is incomplete', async () => {
+    const incompletePayloads = [
+      { email: 'incomplete@example.com', password: 'pass123' },
+      { name: 'No Email', password: 'pass123' },
+      { name: 'No Password', email: 'no-password@example.com' },
+    ];
+
+    for (const payload of incompletePayloads) {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/api/auth/register',
+        payload,
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toHaveProperty('error');
+      expect(response.json()).toHaveProperty('validationErrors');
+    }
+  });
 });
 
 describe('Login', () => {
@@ -100,6 +120,20 @@ describe('Login', () => {
     expect(body.data.user).toHaveProperty('email', testUser.email);
   });
 
+  it('should return an error when email is not registered', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: {
+        email: 'unregistered@example.com',
+        password: testUser.password,
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toHaveProperty('error');
+  });
+
   it('should return an error when password is incorrect', async () => {
     const response = await server.inject({
       method: 'POST',
@@ -112,5 +146,19 @@ describe('Login', () => {
 
     expect(response.statusCode).toBe(401);
     expect(response.json()).toHaveProperty('error');
+  });
+
+  it('should return a validation error when data is incomplete', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/auth/login',
+      payload: {
+        email: testUser.email,
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toHaveProperty('error');
+    expect(response.json()).toHaveProperty('validationErrors');
   });
 });

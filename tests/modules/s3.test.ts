@@ -44,7 +44,7 @@ beforeEach(async () => {
   });
 });
 
-describe('Upload File', () => {
+describe('File Upload', () => {
   beforeEach(async () => {
     await db.delete(users);
   });
@@ -121,5 +121,37 @@ describe('Upload File', () => {
         Key: key,
       }),
     );
+  });
+
+  it('should deny access when the user is unauthenticated', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/s3/upload/presign',
+      payload: {
+        filename: 'avatar.png',
+        contentType: 'image/png',
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toHaveProperty('error');
+  });
+
+  it('should return a validation error when data is incomplete', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/s3/upload/presign',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+      payload: {
+        // filename
+        contentType: 'image/png',
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toHaveProperty('error');
+    expect(response.json()).toHaveProperty('validationErrors');
   });
 });

@@ -87,6 +87,20 @@ describe('Edit Profile', () => {
     expect(() => new URL(photoUrl!)).not.toThrow();
   });
 
+  it('should deny access when the user is unauthenticated', async () => {
+    const response = await server.inject({
+      method: 'PUT',
+      url: '/api/users/profile',
+      payload: {
+        name: 'Anonymous Update',
+        photo_url: 'https://minio.test/cv/avatar.png',
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toHaveProperty('error');
+  });
+
   it('should return an error when updating with an existing email', async () => {
     await db.insert(users).values({
       ...testUser,
@@ -108,5 +122,23 @@ describe('Edit Profile', () => {
 
     expect(response.statusCode).toBe(400);
     expect(response.json()).toHaveProperty('error');
+  });
+
+  it('should return a validation error when data format is invalid', async () => {
+    const response = await server.inject({
+      method: 'PUT',
+      url: '/api/users/profile',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+      payload: {
+        name: 'Alice Updated',
+        photo_url: 'not-a-valid-url',
+      },
+    });
+
+    expect(response.statusCode).toBe(400);
+    expect(response.json()).toHaveProperty('error');
+    expect(response.json()).toHaveProperty('validationErrors');
   });
 });
