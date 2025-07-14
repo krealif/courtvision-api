@@ -36,7 +36,7 @@ export default class VideoService {
       });
 
       await this.videoQueue.add(
-        'testQueue',
+        'videoQueue',
         {
           id: result.insertId,
           video_url: objectKey,

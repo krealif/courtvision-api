@@ -7,13 +7,13 @@ const redisConnection = {
   password: env.REDIS_PASSWORD,
 };
 
-export const videoQueue = new Queue('testQueue', {
+export const videoQueue = new Queue('videoQueue', {
   connection: {
     ...redisConnection,
     enableOfflineQueue: false,
   },
 });
 
-export const videoQueueEvents = new QueueEvents('testQueue', {
+export const videoQueueEvents = new QueueEvents('videoQueue', {
   connection: redisConnection,
 });
