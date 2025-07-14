@@ -7,9 +7,6 @@ CREATE TABLE `videos` (
 	`status` enum('waiting','processing','completed','failed') NOT NULL,
 	`video_url` varchar(255) NOT NULL,
 	`thumbnail_url` varchar(255),
-	`video_result` varchar(255),
-	`tracking_result` varchar(255),
-	`shot_result` varchar(255),
 	`created_at` timestamp NOT NULL DEFAULT (now()),
 	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
 	CONSTRAINT `videos_id` PRIMARY KEY(`id`)

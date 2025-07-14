@@ -1,9 +1,7 @@
 import { QueueEvents } from 'bullmq';
 import { eq } from 'drizzle-orm';
-import { Value } from '@sinclair/typebox/value';
 import { DbClient } from '@/infra/db';
 import { VideoStatus, videos } from '@/infra/db/db.schema';
-import { VideoJobResultSchema } from './video.schema';
 
 export default class VideoQueueEvent {
   constructor(
@@ -18,8 +16,8 @@ export default class VideoQueueEvent {
       void this.handleActiveEvent(jobId);
     });
 
-    queue.on('completed', ({ jobId, returnvalue }) => {
-      void this.handleCompletedEvent(jobId, returnvalue);
+    queue.on('completed', ({ jobId }) => {
+      void this.handleCompletedEvent(jobId);
     });
 
     queue.on('failed', ({ jobId }) => {
@@ -43,39 +41,13 @@ export default class VideoQueueEvent {
       .where(eq(videos.id, videoId));
   }
 
-  private async handleCompletedEvent(jobId: string, returnvalue: string) {
+  private async handleCompletedEvent(jobId: string) {
     const videoId = this.getVideoId(jobId);
-
-    let result: unknown;
-
-    try {
-      result = JSON.parse(returnvalue);
-    } catch (error) {
-      console.error(error);
-      await this.db
-        .update(videos)
-        .set({ status: VideoStatus.FAILED })
-        .where(eq(videos.id, videoId));
-
-      return;
-    }
-
-    if (!Value.Check(VideoJobResultSchema, result)) {
-      await this.db
-        .update(videos)
-        .set({ status: VideoStatus.FAILED })
-        .where(eq(videos.id, videoId));
-      return;
-    }
 
     await this.db
       .update(videos)
       .set({
         status: VideoStatus.COMPLETED,
-        thumbnail_url: result.thumbnail_url,
-        video_result: result.video_result,
-        tracking_result: result.tracking_result,
-        shot_result: result.shot_result,
       })
       .where(eq(videos.id, videoId));
   }

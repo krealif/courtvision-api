@@ -70,6 +70,28 @@ export default function routes(app: FastifyInstance) {
   );
 
   app.get(
+    '/videos/:id/result',
+    {
+      schema: {
+        summary: 'Retrieve a video analysis result',
+        description:
+          'Retrieves the analysis result of a specific video by its ID, including player tracking and shot detection data.',
+        tags: ['Videos'],
+        security: [{ bearerAuth: [] }],
+        params: VideoSchema.VideoIdParamsSchema,
+        response: {
+          200: VideoSchema.ShowResultResponseSchema,
+          401: ErrorSchema.UnauthorizedError,
+          403: ErrorSchema.ForbiddenError,
+          500: ErrorSchema.InternalServerError,
+        },
+      },
+      preHandler: [app.authenticate()],
+    },
+    videoController.showResult.bind(videoController),
+  );
+
+  app.get(
     '/videos/progress',
     {
       schema: {

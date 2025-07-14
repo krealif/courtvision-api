@@ -2,8 +2,7 @@ import { JobProgress, Queue, QueueEvents } from 'bullmq';
 import { desc, eq } from 'drizzle-orm';
 import hyperid from 'hyperid';
 import { DbClient } from '@/infra/db';
-import { Video, VideoStatus, videos } from '@/infra/db/db.schema';
-import S3Service from '../s3/s3.service';
+import { VideoStatus, videos } from '@/infra/db/db.schema';
 import { CreateVideoBody, VideoJobData } from './video.schema';
 
 interface JobProgressCallbacks {
@@ -15,7 +14,6 @@ interface JobProgressCallbacks {
 export default class VideoService {
   constructor(
     private readonly db: DbClient,
-    private readonly s3Service: S3Service,
     private readonly videoQueue: Queue<VideoJobData>,
     private readonly videoQueueEvents: QueueEvents,
   ) {}
@@ -38,7 +36,7 @@ export default class VideoService {
       });
 
       await this.videoQueue.add(
-        'videoQueue',
+        'testQueue',
         {
           id: result.insertId,
           video_url: objectKey,
@@ -75,19 +73,19 @@ export default class VideoService {
     return video;
   }
 
-  async delete(video: Video) {
-    const [result] = await this.db
-      .delete(videos)
-      .where(eq(videos.id, video.id));
+  async findWithResultById(videoId: number) {
+    const result = await this.db.query.videos.findFirst({
+      where: eq(videos.id, videoId),
+      with: {
+        result: true,
+      },
+    });
 
-    await Promise.all([
-      this.s3Service.deleteObject(video.video_url),
-      video.video_result && this.s3Service.deleteObject(video.video_result),
-      video.thumbnail_url && this.s3Service.deleteObject(video.thumbnail_url),
-      video.shot_result && this.s3Service.deleteObject(video.shot_result),
-      video.tracking_result &&
-        this.s3Service.deleteObject(video.tracking_result),
-    ]);
+    return result;
+  }
+
+  async delete(videoId: number) {
+    const [result] = await this.db.delete(videos).where(eq(videos.id, videoId));
 
     return result.affectedRows;
   }

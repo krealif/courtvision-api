@@ -37,24 +37,6 @@ const VideoSchema = Type.Object({
       description: 'The URL of the generated thumbnail image for the video.',
     }),
   ),
-  video_result: Type.Union([
-    Type.String({
-      description: 'The URL to the video with overlaid analysis results.',
-    }),
-    Type.Null(),
-  ]),
-  tracking_result: Type.Union([
-    Type.String({
-      description: 'The URL to the JSON file containing player tracking data.',
-    }),
-    Type.Null(),
-  ]),
-  shot_result: Type.Union([
-    Type.String({
-      description: 'The URL to the JSON file containing shot analysis data.',
-    }),
-    Type.Null(),
-  ]),
   created_at: Type.String({
     format: 'date-time',
     description: 'The date and time when the video resource was created.',
@@ -62,14 +44,6 @@ const VideoSchema = Type.Object({
   }),
 });
 export type VideoJobData = Pick<Static<typeof VideoSchema>, 'id' | 'video_url'>;
-
-export const VideoJobResultSchema = Type.Object({
-  thumbnail_url: Type.Optional(Type.String()),
-  video_result: Type.Optional(Type.String()),
-  tracking_result: Type.Optional(Type.String()),
-  shot_result: Type.Optional(Type.String()),
-});
-export type VideoJobResult = Static<typeof VideoJobResultSchema>;
 
 /**
  * Request Schema
@@ -162,6 +136,39 @@ export const ShowVideoResponseSchema = Type.Object({
   }),
 });
 export type ShowVideoResponse = Static<typeof ShowVideoResponseSchema>;
+
+export const ShowResultResponseSchema = Type.Object({
+  statusCode: Type.Literal(200),
+  message: Type.String(),
+  data: Type.Object({
+    result: Type.Object({
+      court_length_px: Type.Number(),
+      court_width_px: Type.Number(),
+      video_url: Type.String({
+        format: 'uri',
+        minLength: 1,
+        maxLength: 255,
+      }),
+      tracking: Type.Array(
+        Type.Object({
+          frame: Type.Number(),
+          player_id: Type.Number(),
+          team_id: Type.Number(),
+          x: Type.Number(),
+          y: Type.Number(),
+        }),
+      ),
+      shot: Type.Array(
+        Type.Object({
+          frame: Type.Number(),
+          player_id: Type.Number(),
+          result: Type.String(),
+        }),
+      ),
+    }),
+  }),
+});
+export type ShowResultResponse = Static<typeof ShowResultResponseSchema>;
 
 export const DeleteVideoResponseSchema = Type.Object({
   statusCode: Type.Literal(200),

@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "1f507ef3-35c8-4531-8e12-253d61dd71fd",
-  "prevId": "e127ad02-ebd7-42c2-9451-d5bf814e4499",
+  "id": "55f4f966-ef5a-4b19-be13-24ad9d8ddd48",
+  "prevId": "1f507ef3-35c8-4531-8e12-253d61dd71fd",
   "tables": {
     "users": {
       "name": "users",
@@ -74,6 +74,97 @@
           "columns": ["email"]
         }
       },
+      "checkConstraint": {}
+    },
+    "video_results": {
+      "name": "video_results",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "video_id": {
+          "name": "video_id",
+          "type": "bigint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "court_length_px": {
+          "name": "court_length_px",
+          "type": "smallint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "court_width_px": {
+          "name": "court_width_px",
+          "type": "smallint unsigned",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "video_url": {
+          "name": "video_url",
+          "type": "varchar(255)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "tracking": {
+          "name": "tracking",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "shot": {
+          "name": "shot",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updated_at": {
+          "name": "updated_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "video_results_video_id_videos_id_fk": {
+          "name": "video_results_video_id_videos_id_fk",
+          "tableFrom": "video_results",
+          "tableTo": "videos",
+          "columnsFrom": ["video_id"],
+          "columnsTo": ["id"],
+          "onDelete": "cascade",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {
+        "video_results_id": {
+          "name": "video_results_id",
+          "columns": ["id"]
+        }
+      },
+      "uniqueConstraints": {},
       "checkConstraint": {}
     },
     "videos": {

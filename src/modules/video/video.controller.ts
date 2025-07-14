@@ -83,23 +83,11 @@ export default class VideoController {
     if (!video) return reply.notFound();
     if (video.user_id !== userId) return reply.forbidden();
 
-    const getPresignedOrNull = (key?: string | null) =>
-      key ? this.s3Service.getPresignedDownloadUrl(key) : null;
-
-    const [
-      video_url,
-      thumbnail_url,
-      video_result,
-      tracking_result,
-      shot_result,
-    ] = await Promise.all([
+    const [video_url, thumbnail_url] = await Promise.all([
       this.s3Service.getPresignedDownloadUrl(video.video_url),
       video.thumbnail_url
         ? this.s3Service.getPresignedDownloadUrl(video.thumbnail_url)
         : undefined,
-      getPresignedOrNull(video.video_result),
-      getPresignedOrNull(video.tracking_result),
-      getPresignedOrNull(video.shot_result),
     ]);
 
     return reply.code(200).send({
@@ -110,12 +98,43 @@ export default class VideoController {
           ...video,
           date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
           venue: video.venue ?? undefined,
-          video_url,
           thumbnail_url,
-          video_result,
-          tracking_result,
-          shot_result,
+          video_url,
           created_at: video.created_at.toISOString(),
+        },
+      },
+    });
+  }
+
+  async showResult(
+    request: FastifyRequest<{
+      Params: VideoSchema.VideoIdParams;
+      Reply: VideoSchema.ShowResultResponse;
+    }>,
+    reply: FastifyReply<{ Reply: VideoSchema.ShowResultResponse }>,
+  ) {
+    const { id: videoId } = request.params;
+    const { id: userId } = request.user;
+
+    const video = await this.videoService.findWithResultById(videoId);
+
+    if (!video) return reply.notFound();
+    if (video.user_id !== userId) return reply.forbidden();
+
+    const video_url = await this.s3Service.getPresignedDownloadUrl(
+      video.result.video_url,
+    );
+
+    return reply.code(200).send({
+      statusCode: 200,
+      message: 'Video result retrieved successfully.',
+      data: {
+        result: {
+          court_length_px: video.result.court_length_px,
+          court_width_px: video.result.court_width_px,
+          video_url,
+          tracking: video.result.tracking,
+          shot: video.result.shot,
         },
       },
     });
@@ -128,7 +147,7 @@ export default class VideoController {
     const { id: videoId } = request.params;
     const { id: userId } = request.user;
 
-    const video = await this.videoService.findById(videoId);
+    const video = await this.videoService.findWithResultById(videoId);
 
     if (!video) return reply.notFound();
 
@@ -137,7 +156,13 @@ export default class VideoController {
     if (video.user_id !== userId || !allowedStatuses.includes(video.status))
       return reply.forbidden();
 
-    await this.videoService.delete(video);
+    await Promise.all([
+      this.s3Service.deleteObject(video.video_url),
+      video.thumbnail_url && this.s3Service.deleteObject(video.thumbnail_url),
+      this.s3Service.deleteObject(video.result.video_url),
+    ]);
+
+    await this.videoService.delete(videoId);
 
     return reply.code(200).send({
       statusCode: 200,
