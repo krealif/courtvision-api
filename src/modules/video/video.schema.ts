@@ -162,7 +162,16 @@ export const ShowResultResponseSchema = Type.Object({
         Type.Object({
           frame: Type.Number(),
           player_id: Type.Number(),
+          team_id: Type.Number(),
           result: Type.String(),
+          player_coords: Type.Object({
+            x: Type.Number(),
+            y: Type.Number(),
+          }),
+          ball_coords: Type.Object({
+            x: Type.Number(),
+            y: Type.Number(),
+          }),
         }),
       ),
     }),

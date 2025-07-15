@@ -65,6 +65,9 @@ export const videoResults = table('video_results', {
         result: string;
         frame: number;
         player_id: number;
+        team_id: number;
+        player_coords: { x: number; y: number };
+        ball_coords: { x: number; y: number };
       }[]
     >()
     .notNull(),

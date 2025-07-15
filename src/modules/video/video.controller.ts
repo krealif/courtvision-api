@@ -118,7 +118,7 @@ export default class VideoController {
 
     const video = await this.videoService.findWithResultById(videoId);
 
-    if (!video) return reply.notFound();
+    if (!video?.result) return reply.notFound();
     if (video.user_id !== userId) return reply.forbidden();
 
     const video_url = await this.s3Service.getPresignedDownloadUrl(
