@@ -159,7 +159,7 @@ export default class VideoController {
     await Promise.all([
       this.s3Service.deleteObject(video.video_url),
       video.thumbnail_url && this.s3Service.deleteObject(video.thumbnail_url),
-      this.s3Service.deleteObject(video.result.video_url),
+      video.result && this.s3Service.deleteObject(video.result.video_url),
     ]);
 
     await this.videoService.delete(videoId);
