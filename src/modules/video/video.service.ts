@@ -36,7 +36,7 @@ export default class VideoService {
       });
 
       await this.videoQueue.add(
-        'videoQueue',
+        'analyse-video',
         {
           id: result.insertId,
           video_url: objectKey,
@@ -74,14 +74,14 @@ export default class VideoService {
   }
 
   async findWithResultById(videoId: number) {
-    const result = await this.db.query.videos.findFirst({
+    const video = await this.db.query.videos.findFirst({
       where: eq(videos.id, videoId),
       with: {
         result: true,
       },
     });
 
-    return result;
+    return video;
   }
 
   async delete(videoId: number) {
