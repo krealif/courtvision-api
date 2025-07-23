@@ -1,3 +1,4 @@
+import axios from 'axios';
 import { JobProgress, Queue, QueueEvents } from 'bullmq';
 import { desc, eq } from 'drizzle-orm';
 import hyperid from 'hyperid';
@@ -119,5 +120,66 @@ export default class VideoService {
       videoId: 0,
       userId: 0,
     };
+  }
+
+  async createSync(
+    userId: number,
+    { title, video_url, date, venue }: CreateVideoBody,
+  ) {
+    const pathSegments = new URL(video_url).pathname.split('/').filter(Boolean);
+    const objectKey = pathSegments.slice(1).join('/');
+
+    const [result] = await this.db.insert(videos).values({
+      user_id: userId,
+      title,
+      video_url: objectKey,
+      date: date ? new Date(date) : null,
+      venue,
+      status: VideoStatus.PROCESSING,
+    });
+
+    try {
+      const job = await axios.post(
+        'http://127.0.0.1:8000/analyze',
+        {
+          id: result.insertId,
+          url: objectKey,
+        },
+        {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      if (job.status == 200) {
+        await this.db
+          .update(videos)
+          .set({
+            status: VideoStatus.COMPLETED,
+          })
+          .where(eq(videos.id, result.insertId));
+      } else {
+        await this.db
+          .update(videos)
+          .set({
+            status: VideoStatus.FAILED,
+          })
+          .where(eq(videos.id, result.insertId));
+      }
+    } catch {
+      await this.db
+        .update(videos)
+        .set({
+          status: VideoStatus.FAILED,
+        })
+        .where(eq(videos.id, result.insertId));
+    }
+
+    const video = await this.db.query.videos.findFirst({
+      where: eq(videos.id, result.insertId),
+    });
+
+    return video;
   }
 }

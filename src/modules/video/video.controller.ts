@@ -198,4 +198,33 @@ export default class VideoController {
 
     request.socket.on('close', unsubscribe);
   }
+
+  async createSync(
+    request: FastifyRequest<{
+      Body: VideoSchema.CreateVideoBody;
+      Reply: VideoSchema.CreateVideoResponse;
+    }>,
+    reply: FastifyReply<{ Reply: VideoSchema.CreateVideoResponse }>,
+  ) {
+    const { id: userId } = request.user;
+    const video = await this.videoService.createSync(userId, request.body);
+
+    if (!video) return reply.internalServerError();
+
+    return reply.code(201).send({
+      statusCode: 201,
+      message: 'Video created successfully.',
+      data: {
+        video: {
+          ...video,
+          date: video.date ? format(video.date, 'yyyy-MM-dd') : undefined,
+          venue: video.venue ?? undefined,
+          video_url: await this.s3Service.getPresignedDownloadUrl(
+            video.video_url,
+          ),
+          created_at: video.created_at.toISOString(),
+        },
+      },
+    });
+  }
 }

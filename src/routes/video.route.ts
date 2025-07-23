@@ -137,4 +137,26 @@ export default function routes(app: FastifyInstance) {
     },
     videoController.delete.bind(videoController),
   );
+
+  app.post(
+    '/sync/videos',
+    {
+      schema: {
+        summary: 'Create a video',
+        description:
+          'Creates a new video resource for analysis. Returns the created video object with analysis status information.',
+        // hide: true,
+        tags: ['TEST'],
+        security: [{ bearerAuth: [] }],
+        body: VideoSchema.CreateVideoBodySchema,
+        response: {
+          201: VideoSchema.CreateVideoResponseSchema,
+          401: ErrorSchema.UnauthorizedError,
+          500: ErrorSchema.InternalServerError,
+        },
+      },
+      preHandler: [app.authenticate()],
+    },
+    videoController.createSync.bind(videoController),
+  );
 }
