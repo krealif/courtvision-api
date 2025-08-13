@@ -40,6 +40,7 @@ export default function routes(app: FastifyInstance) {
         body: UserSchema.UpdateUserBodySchema,
         response: {
           200: UserSchema.ShowUserResponseSchema,
+          400: ErrorSchema.BadRequestError,
           401: ErrorSchema.ForbiddenError,
           404: ErrorSchema.NotFoundError,
           500: ErrorSchema.InternalServerError,

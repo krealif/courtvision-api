@@ -19,6 +19,7 @@ export default function routes(app: FastifyInstance) {
         body: VideoSchema.CreateVideoBodySchema,
         response: {
           201: VideoSchema.CreateVideoResponseSchema,
+          400: ErrorSchema.BadRequestError,
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },

@@ -18,6 +18,7 @@ export default function routes(app: FastifyInstance) {
         body: S3Schema.PresignedUploadBodySchema,
         response: {
           200: S3Schema.PresignedUploadResponseSchema,
+          400: ErrorSchema.BadRequestError,
           401: ErrorSchema.UnauthorizedError,
           500: ErrorSchema.InternalServerError,
         },
