@@ -11,17 +11,12 @@ import { DbClient } from '@/infra/db';
 import { users } from '@/infra/db/db.schema';
 import { PresignedUploadResponse } from '@/modules/s3/s3.schema';
 import createServer from '@/server';
+import { user1 } from '../fixtures/data';
 
 let server: FastifyInstance;
 let db: DbClient;
 let s3: S3Client;
 let token: string;
-
-const testUser = {
-  name: 'Alice',
-  email: 'alice1@example.com',
-  password: 'Password123!',
-};
 
 beforeAll(async () => {
   server = await createServer();
@@ -36,11 +31,11 @@ afterAll(async () => {
 beforeEach(async () => {
   await db.delete(users);
 
-  const [result] = await db.insert(users).values(testUser);
+  const [result] = await db.insert(users).values(user1);
 
   token = server.jwt.sign({
     id: result.insertId,
-    email: testUser.email,
+    email: user1.email,
   });
 });
 
@@ -137,21 +132,26 @@ describe('File Upload', () => {
     expect(response.json()).toHaveProperty('error');
   });
 
-  it('should return a validation error when data is incomplete', async () => {
-    const response = await server.inject({
-      method: 'POST',
-      url: '/api/s3/upload/presign',
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
-      payload: {
-        // filename
-        contentType: 'image/png',
-      },
-    });
+  it('should return a validation error when data is invalid', async () => {
+    const invalidPayloads = [
+      { filename: 'avatar.png' },
+      { contentType: 'image/png' },
+      { filename: 'a.png', contentType: 'application/zip' },
+    ];
 
-    expect(response.statusCode).toBe(400);
-    expect(response.json()).toHaveProperty('error');
-    expect(response.json()).toHaveProperty('validationErrors');
+    for (const payload of invalidPayloads) {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/api/s3/upload/presign',
+        headers: {
+          authorization: `Bearer ${token}`,
+        },
+        payload,
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toHaveProperty('error');
+      expect(response.json()).toHaveProperty('validationErrors');
+    }
   });
 });

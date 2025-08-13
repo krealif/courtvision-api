@@ -5,17 +5,10 @@ import { DbClient } from '@/infra/db';
 import { users } from '@/infra/db/db.schema';
 import { LoginResponse, SignupResponse } from '@/modules/auth/auth.schema';
 import createServer from '@/server';
+import { user1, user2 } from '../fixtures/data';
 
 let server: FastifyInstance;
 let db: DbClient;
-
-const testUser = {
-  name: 'Alice',
-  email: 'alice1@example.com',
-  password: 'Password123!',
-};
-const hashedPassword =
-  '$2b$10$GPbxrbtKSoyJa/52ECuOH.m1gsDbVNaCPP3t7gvAOS0dIDw0Yclim';
 
 beforeAll(async () => {
   server = await createServer();
@@ -35,26 +28,26 @@ describe('Register', () => {
     const response = await server.inject({
       method: 'POST',
       url: '/api/auth/register',
-      payload: testUser,
+      payload: user1,
     });
 
     const body: SignupResponse = response.json();
 
     expect(response.statusCode).toBe(201);
     expect(body.data).toHaveProperty('token');
-    expect(body.data.user).toHaveProperty('email', testUser.email);
+    expect(body.data.user).toHaveProperty('email', user1.email);
 
     const savedUser = await db.query.users.findFirst({
-      where: eq(users.email, testUser.email),
+      where: eq(users.email, user1.email),
     });
 
     expect(savedUser).toBeTruthy();
-    expect(savedUser?.password).not.toBe(testUser.password);
+    expect(savedUser?.password).not.toBe(user1.plainPassword);
   });
 
   it('should return an error when registering with an existing email', async () => {
     await db.insert(users).values({
-      ...testUser,
+      ...user1,
       password: '$2b$10$hashedexample',
     });
 
@@ -63,8 +56,8 @@ describe('Register', () => {
       url: '/api/auth/register',
       payload: {
         name: 'Alice Again',
-        email: testUser.email,
-        password: testUser.password,
+        email: user1.email,
+        password: user1.plainPassword,
       },
     });
 
@@ -72,14 +65,14 @@ describe('Register', () => {
     expect(response.json()).toHaveProperty('error');
   });
 
-  it('should return a validation error when data is incomplete', async () => {
-    const incompletePayloads = [
+  it('should return a validation error when data is invalid', async () => {
+    const invalidPayloads = [
       { email: 'incomplete@example.com', password: 'pass123' },
       { name: 'No Email', password: 'pass123' },
       { name: 'No Password', email: 'no-password@example.com' },
     ];
 
-    for (const payload of incompletePayloads) {
+    for (const payload of invalidPayloads) {
       const response = await server.inject({
         method: 'POST',
         url: '/api/auth/register',
@@ -97,10 +90,7 @@ describe('Login', () => {
   beforeEach(async () => {
     await db.delete(users);
 
-    await db.insert(users).values({
-      ...testUser,
-      password: hashedPassword,
-    });
+    await db.insert(users).values(user1);
   });
 
   it('should log in successfully with valid credentials', async () => {
@@ -108,8 +98,8 @@ describe('Login', () => {
       method: 'POST',
       url: '/api/auth/login',
       payload: {
-        email: testUser.email,
-        password: testUser.password,
+        email: user1.email,
+        password: user1.plainPassword,
       },
     });
 
@@ -117,16 +107,16 @@ describe('Login', () => {
 
     expect(response.statusCode).toBe(200);
     expect(body.data).toHaveProperty('token');
-    expect(body.data.user).toHaveProperty('email', testUser.email);
+    expect(body.data.user).toHaveProperty('email', user1.email);
   });
 
-  it('should return an error when email is not registered', async () => {
+  it('should return an error when is not registered', async () => {
     const response = await server.inject({
       method: 'POST',
       url: '/api/auth/login',
       payload: {
-        email: 'unregistered@example.com',
-        password: testUser.password,
+        email: user2.email,
+        password: user2.plainPassword,
       },
     });
 
@@ -139,8 +129,8 @@ describe('Login', () => {
       method: 'POST',
       url: '/api/auth/login',
       payload: {
-        email: testUser.email,
-        password: 'WrongPassword!',
+        email: user1.email,
+        password: user2.email,
       },
     });
 
@@ -148,17 +138,22 @@ describe('Login', () => {
     expect(response.json()).toHaveProperty('error');
   });
 
-  it('should return a validation error when data is incomplete', async () => {
-    const response = await server.inject({
-      method: 'POST',
-      url: '/api/auth/login',
-      payload: {
-        email: testUser.email,
-      },
-    });
+  it('should return a validation error when data is invalid', async () => {
+    const invalidPayloads = [
+      { email: user1.email },
+      { password: user1.plainPassword },
+    ];
 
-    expect(response.statusCode).toBe(400);
-    expect(response.json()).toHaveProperty('error');
-    expect(response.json()).toHaveProperty('validationErrors');
+    for (const payload of invalidPayloads) {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/api/auth/login',
+        payload,
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toHaveProperty('error');
+      expect(response.json()).toHaveProperty('validationErrors');
+    }
   });
 });

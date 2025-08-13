@@ -4,16 +4,11 @@ import { DbClient } from '@/infra/db';
 import { users } from '@/infra/db/db.schema';
 import { ShowUserResponse } from '@/modules/user/user.schema';
 import createServer from '@/server';
+import { user1, user2 } from '../fixtures/data';
 
 let server: FastifyInstance;
 let db: DbClient;
 let token: string;
-
-const testUser = {
-  name: 'Alice',
-  email: 'alice2@example.com',
-  password: '$2b$10$GPbxrbtKSoyJa/52ECuOH.m1gsDbVNaCPP3t7gvAOS0dIDw0Yclim',
-};
 
 beforeAll(async () => {
   server = await createServer();
@@ -27,11 +22,11 @@ afterAll(async () => {
 beforeEach(async () => {
   await db.delete(users);
 
-  const [result] = await db.insert(users).values(testUser);
+  const [result] = await db.insert(users).values(user1);
 
   token = server.jwt.sign({
     id: result.insertId,
-    email: testUser.email,
+    email: user1.email,
   });
 });
 
@@ -48,7 +43,7 @@ describe('Retrieve Profile', () => {
     const body: ShowUserResponse = response.json();
 
     expect(response.statusCode).toBe(200);
-    expect(body.data.user).toHaveProperty('email', testUser.email);
+    expect(body.data.user).toHaveProperty('email', user1.email);
   });
 
   it('should deny access when the user is unauthenticated', async () => {
@@ -80,7 +75,7 @@ describe('Edit Profile', () => {
 
     const body: ShowUserResponse = response.json();
     expect(body.data.user).toHaveProperty('name', 'Alice Updated');
-    expect(body.data.user).toHaveProperty('email', testUser.email);
+    expect(body.data.user).toHaveProperty('email', user1.email);
 
     const photoUrl = body.data.user.photo_url;
     expect(typeof photoUrl).toBe('string');
@@ -93,7 +88,6 @@ describe('Edit Profile', () => {
       url: '/api/users/profile',
       payload: {
         name: 'Anonymous Update',
-        photo_url: 'https://minio.test/cv/avatar.png',
       },
     });
 
@@ -102,10 +96,7 @@ describe('Edit Profile', () => {
   });
 
   it('should return an error when updating with an existing email', async () => {
-    await db.insert(users).values({
-      ...testUser,
-      email: 'alice3@example.com',
-    });
+    await db.insert(users).values(user2);
 
     const response = await server.inject({
       method: 'PUT',
@@ -115,8 +106,7 @@ describe('Edit Profile', () => {
       },
       payload: {
         name: 'Alice Updated',
-        email: 'alice3@example.com',
-        photo_url: 'https://minio.test/cv/avatar.png',
+        email: user2.email,
       },
     });
 
@@ -124,7 +114,7 @@ describe('Edit Profile', () => {
     expect(response.json()).toHaveProperty('error');
   });
 
-  it('should return a validation error when data format is invalid', async () => {
+  it('should return a validation error when data is invalid', async () => {
     const response = await server.inject({
       method: 'PUT',
       url: '/api/users/profile',
