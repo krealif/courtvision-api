@@ -1,10 +1,21 @@
+import axios from 'axios';
 import { Job, Queue, Worker } from 'bullmq';
 import { eq } from 'drizzle-orm';
 import { FastifyInstance } from 'fastify';
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import {
+  Mock,
+  afterAll,
+  beforeAll,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+} from 'vitest';
 import { DbClient } from '@/infra/db';
 import { VideoStatus, users, videoResults, videos } from '@/infra/db/db.schema';
 import {
+  CreateVideoResponse,
   IndexVideosResponse,
   VideoJobData,
 } from '@/modules/video/video.schema';
@@ -496,5 +507,95 @@ describe('Delete Video', () => {
 
     expect(response.statusCode).toBe(403);
     expect(response.json()).toHaveProperty('error');
+  });
+});
+
+describe('Analyse Video Sync', () => {
+  vi.mock('axios');
+
+  it('should process the video successfully when data is valid', async () => {
+    (axios.post as Mock).mockResolvedValueOnce({ status: 200 });
+
+    const payload = {
+      title: 'Warriors vs Lakers',
+      video_url: 'http://minio.test/cv/match.mp4',
+    };
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/sync/videos',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      payload,
+    });
+
+    expect(response.statusCode).toBe(201);
+    const body: CreateVideoResponse = response.json();
+    expect(body.data.video.status).toBe(VideoStatus.COMPLETED);
+  });
+
+  it('should mark the video as failed when detection and tracking fail', async () => {
+    (axios.post as Mock).mockResolvedValueOnce({ status: 500 });
+
+    const payload = {
+      title: 'Warriors vs Lakers',
+      video_url: 'http://minio.test/cv/match.mp4',
+    };
+
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/sync/videos',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      payload,
+    });
+
+    expect(response.statusCode).toBe(201);
+    const body: CreateVideoResponse = response.json();
+    expect(body.data.video.status).toBe(VideoStatus.FAILED);
+  });
+
+  it('should deny access when the user is unauthenticated', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/api/videos',
+      payload: {
+        title: 'Celtics vs Mavericks',
+        video_url: 'http://minio.test/cv/match.mp4',
+      },
+    });
+
+    expect(response.statusCode).toBe(401);
+    expect(response.json()).toHaveProperty('error');
+  });
+
+  it('should return a validation error when data format is invalid', async () => {
+    const invalidPayloads = [
+      { title: 'Celtics vs Mavericks' },
+      { video_url: 'http://minio.test/cv/match.mp4' },
+      {
+        title: 'Celtics vs Mavericks',
+        video_url: 'minio.test/cv/match.mp4',
+      },
+      {
+        title: 'Celtics vs Mavericks',
+        video_url: 'http://minio.test/cv/match.mp4',
+        date: 'date',
+      },
+    ];
+
+    for (const payload of invalidPayloads) {
+      const response = await server.inject({
+        method: 'POST',
+        url: '/api/videos',
+        payload,
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toHaveProperty('error');
+      expect(response.json()).toHaveProperty('validationErrors');
+    }
   });
 });
