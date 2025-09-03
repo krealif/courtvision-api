@@ -1,5 +1,6 @@
 import path from 'node:path';
 import { Lifetime, asClass, asFunction, asValue } from 'awilix';
+import axios from 'axios';
 import fp from 'fastify-plugin';
 import { diContainerClassic, fastifyAwilixPlugin } from '@fastify/awilix';
 import { createDbClient } from '@/infra/db';
@@ -40,6 +41,7 @@ export default fp(async (fastify) => {
       lifetime: Lifetime.SINGLETON,
       asyncDispose: 'close',
     }),
+    http: asValue(axios),
   });
 
   diContainerClassic.loadModules(

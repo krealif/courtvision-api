@@ -1,4 +1,4 @@
-import axios from 'axios';
+import { AxiosInstance } from 'axios';
 import { JobProgress, Queue, QueueEvents } from 'bullmq';
 import { desc, eq } from 'drizzle-orm';
 import hyperid from 'hyperid';
@@ -17,6 +17,7 @@ export default class VideoService {
     private readonly db: DbClient,
     private readonly videoQueue: Queue<VideoJobData>,
     private readonly videoQueueEvents: QueueEvents,
+    private readonly http: AxiosInstance,
   ) {}
 
   async create(
@@ -139,8 +140,8 @@ export default class VideoService {
     });
 
     try {
-      const job = await axios.post(
-        'http://127.0.0.1:8000/analyze',
+      const job = await this.http.post(
+        'a',
         {
           id: result.insertId,
           url: objectKey,
