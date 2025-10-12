@@ -11,10 +11,10 @@ async function startServer() {
         allErrors: true,
       },
     },
-    maxParamLength: 128,
+    routerOptions: {
+      maxParamLength: 128,
+    },
     logger: loggerConfig,
-    ignoreTrailingSlash: true,
-    ignoreDuplicateSlashes: true,
     genReqId: () => hyperid().uuid,
   });
 
